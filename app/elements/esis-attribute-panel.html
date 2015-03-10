@@ -1,0 +1,188 @@
+<dom-module id="esis-attribute-panel">
+    <style>
+        esis-attribute-panel {
+            display : block;
+        }
+        esis-attribute-panel .pager {
+            font-size: 22px;
+            margin: 10px !important;
+        }
+        esis-attribute-panel .pager a {
+            border-radius: 30px !important;
+            cursor: pointer;
+        }
+        esis-attribute-panel a.list-group-item[active] {
+            background-color: #485563;
+            color: #df691a;
+        }
+        esis-attribute-panel a.list-group-item {
+            cursor: pointer;
+        } 
+        .has-value {
+            display: none;
+            color: #5cb85c;
+            font-size: 16px;
+        }
+    </style>
+
+    <template>
+        <!-- nav control -->
+        <div class="layout vertical" style="height: 100%">
+            <div style="border-bottom: 1px solid #4e5d6c">
+                <ul class="pager">
+                    <li class="previous">
+                        <a><i class="fa fa-chevron-left"></i></a>
+                    <li>
+                    <li>{{currentSpectraTitle}}</li>
+                    <li class="next">
+                        <a><i class="fa fa-chevron-right"></i></a>
+                    <li>
+                </ul>
+            </div>
+
+            <div class="flex" style="position: relative">
+                <div class="layout horizontal fit">
+
+                    <div style="height: 100%; overflow: auto; min-width: 250px; border-right: 1px solid #4e5d6c">
+                        <h4 style="margin-bottom: 20px; text-align: center">Attributes</h4>
+
+                        <div class="panel panel-success">
+                            <div class="panel-heading">EcoSIS <span id="attrCounts" class="pull-right label label-danger">0/0</span></div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <template is="x-repeat" items="{{ecosisAttributes}}">
+                                        <a class="list-group-item attr-item ecosis-item" 
+                                            on-click="onAttrSelect" 
+                                            value$="{{item.name}}">
+                                            <span>{{item.name}}</span>
+                                            <span class="has-value"><i class="fa fa-check"></i></span>
+                                        </a>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div class="panel panel-info">
+                            <div class="panel-heading">Custom</div>
+                            <div class="panel-body">
+                                <div class="list-group">
+                                    <template is="x-repeat" items="{{customAttributes}}">
+                                        <a class="list-group-item attr-item"
+                                            value$="{{item.name}}"
+                                            on-click="onAttrSelect">{{item.name}}</a>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex" style="overflow: auto">
+                        <div style="padding: 10px">
+                            <esis-metadata-attribute 
+                                id="attrInput"
+                                hidden$="{{!showAttribute}}" 
+                                on-value-change="onValueChange">
+                            </esis-metadata-attribute>
+
+                            <div hidden$="{{showAttribute}}">Select attribute to edit on left</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        <div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is : 'esis-attribute-panel',
+
+        properties : {
+            attributeList : {
+                type : Object
+            }
+        },
+
+        configure : function() {
+            return {
+                attributeList : [],
+
+                selected : '',
+                selectedValue : '',
+
+                showAttribute : false,
+                currentSpectraTitle : 'Spectra #1',
+                ecosisAttributes : [],
+                customAttributes : [],
+
+                spectra : {},
+            }
+        },
+
+        attached : function() {
+            for( var key in Esis.schema ) {
+                this.attributeList.push(key);
+            }
+            this.updateSelector();
+        },
+
+        onAttrSelect : function(e) {
+            this.setSelected(e.currentTarget.getAttribute('value'));
+        },
+
+        setSelected : function(attr) {
+            this.selected = attr;
+            this.selectedValue = this.spectra[attr] || '';
+
+            $(this).find('.attr-item').removeAttr('active');
+            $(this).find('.list-group-item[value="'+attr+'"]').attr('active', '');
+
+            this.showAttribute = true;
+            this.$.attrInput.update(this.selected, this.selectedValue);
+        },
+
+        onValueChange : function(e) {
+            this.spectra[e.detail.attribute] = e.detail.value;
+            this.selectedValue = e.detail.value;
+
+            this.updateCounts();
+        },
+
+        updateCounts : function() {
+            var items = $(this).find('.ecosis-item');
+            var count = 0;
+
+            for( var i = 0; i < items.length; i++ ) {
+                if( this.spectra[items[i].getAttribute('value')] ) {
+                    count++;
+                    $(items[i]).find('.has-value').show();
+                } else {
+                    $(items[i]).find('.has-value').hide();
+                }
+            }
+
+            this.$.attrCounts.innerHTML = count + '/' + items.length;
+            var percent = count / items.length;
+            var className = 'pull-right label ';
+
+            if( percent < .25 ) this.$.attrCounts.className = className + 'label-danger';
+            else if( percent < 1 ) this.$.attrCounts.className = className + 'label-warning';
+            else this.$.attrCounts.className = className + 'label-success';
+        },
+
+        updateSelector : function() {
+            if( !this.attributeList ) return;
+
+            this.ecosisAttributes = [];
+            for( var i = 0; i < this.attributeList.length; i++ ) {
+                this.ecosisAttributes.push({
+                    name : this.attributeList[i]
+                })
+            }
+
+            setTimeout(this.updateCounts.bind(this), 50);
+        }
+
+    });
+</script>

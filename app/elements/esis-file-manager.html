@@ -1,0 +1,43 @@
+<dom-module id="esis-file-manager">
+    <style>
+        .page-header {
+            border-bottom: 1px solid #ebebeb;
+        }
+    </style>
+
+    <template>
+        <h4 class="page-header" style="margin-top:0;padding-top:0">Add</h4>
+        <input style="display:none;" id="fileDialog" type="file" on-change="onSelect" />
+        <a class="btn btn-default" on-click="chooseFile">Select File</a>
+
+        <h4 class="page-header">Manage</h4>
+    </template>
+</dom-module>
+
+<script>
+(function(){
+    var importer = require('./scripts/import/index.js');
+
+    Polymer({
+        is: 'esis-file-manager',
+
+        chooseFile : function() {
+            this.$.fileDialog.click();
+        },
+
+        onSelect : function(e) {
+            this.select(this.$.fileDialog.value);
+        },
+
+        select : function(file) {
+            importer.run(file, this.onFileImported.bind(this));
+        },
+
+        onFileImported : function(err, resp) {
+            if( err ) return console.log(err);
+            console.log(resp);
+        }
+    });
+
+})();
+</script>

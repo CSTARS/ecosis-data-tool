@@ -1,0 +1,81 @@
+<script src="../../bower_components/bootstrap/js/modal.js"></script>
+
+<dom-module id="esis-popup">
+    <style>
+      :host {
+        overflow: auto !important;
+        z-index: 10050 !important;
+      }
+      .modal-content {
+        box-shadow: 0 0 15px black;
+      }
+    </style>
+    <template>      
+
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header" id="header" hidden$="{{!showHeader}}">
+              <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+              <h4 class="modal-title">{{header}}</h4>
+            </div>
+            <div class="modal-body" id="body">
+              <content select=".popup-body"></content>
+            </div>
+            <div class="modal-footer" id="footer" hidden$="{{noFooter}}">
+              <content select=".popup-footer"></content>
+            </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+
+    </template>
+</dom-module>
+
+<script>
+  Polymer({
+      is : 'esis-popup',
+      properties : {
+        header : String,
+        noFooter : Boolean,
+        header : {
+          type : String,
+          observer : 'onHeaderUpdate'
+        }
+      },
+      configure : function() {
+        return {
+          header : '',
+          showHeader : false,
+          noFooter : false,
+          showing : false,
+        }
+      },
+      ready : function() {
+        this.classList.add('modal');
+        this.classList.add('fade');
+      },
+      init : function() {
+        var ele = $(this).detach();
+        $('body').append(ele);
+        ele.modal({show: false, backdrop:'static'});
+      },
+      onHeaderUpdate : function() {
+        if( !this.header ) return;
+        if( this.header.length > 0 ) this.showHeader = true;
+        else this.showHeader = false;
+      },
+        
+      show: function() {
+          if( this.showing ) return;
+          this.showing = true;
+          $(this).modal('show');
+      },
+      hide: function(e) {
+        if( !this.showing ) return;
+        this.showing = false;
+        $(this).modal('hide');
+      },
+      destroy : function() {
+        $(this).remove();
+      }
+  });
+</script>

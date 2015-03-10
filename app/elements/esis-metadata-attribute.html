@@ -1,0 +1,109 @@
+<dom-module id="esis-metadata-attribute">
+    <style>
+        esis-metadata-attribute {
+            display: block;
+        }
+        #inputRoot {
+            padding: 30px 20px;
+        }
+    </style>
+    <template>
+
+        <h2 class="page-header">
+            <span>{{attribute}}</span>:
+            <small style="color:#888">{{value}}</small>
+        </h2>
+        <div class="help-block">{{description}}</div>
+
+        <div id="inputRoot"></div>
+
+        <template id="controlledVocab" is="x-template">
+            <esis-controlled-input 
+                value="{{value}}" 
+                attribute="{{attribute}}"
+                on-change="onValueChange">
+            </esis-controlled-input>
+        </template>
+
+        <template id="usda" is="x-template">
+            <esis-usda-input 
+                value="{{value}}"
+                on-usda-value-change="usdaValueChange">
+            </esis-usda-input>
+        </template>
+
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is : 'esis-metadata-attribute',
+
+        properties : {
+            attribute : {
+                type : String,
+            },
+        },
+
+        configure : function() {
+            return {
+                description : '',
+                values : '',
+                type : ''
+            }
+        },
+
+        update : function(attribute, value) {
+            this.attribute = attribute;
+            this.value = value;
+
+            if( !this.attribute ) return;
+
+            if( Esis.schema[this.attribute] ) {
+                this.description = Esis.schema[this.attribute].description;
+
+
+                this.values = Esis.schema[this.attribute].values;
+                this.type = Esis.schema[this.attribute].type;
+
+                this.createInput();
+            } else {
+                alert('Unrecgonized Attribute: '+this.attribute);
+            }
+        },
+
+        createInput : function() {
+            this.$.inputRoot.innerHTML = '';
+
+            if( this.values ) {
+                var t = this.$.controlledVocab.stamp({
+                    value : this.value,
+                    attribute : this.attribute
+                });
+                this.$.inputRoot.appendChild(t.root);
+
+            } else if ( this.attribute == 'USDA Code' ) {
+                var t = this.$.usda.stamp({
+                    value : this.value,
+                    attribute : this.attribute
+                });
+                this.$.inputRoot.appendChild(t.root);
+            }
+        },
+
+        onValueChange : function(e) {
+            this.fire('value-change',{
+                attribute : this.attribute,
+                value : e.target.value
+            });
+        },
+
+        // hack: firing value-change from esis-usda-input doesn't seem to bubble after the
+        // first time it's stamped out.  I would have to guess a polymer bug :/
+        // rebinding to this function on each stamp and catching custom event.
+        usdaValueChange : function(e) {
+            this.fire('value-change', e.detail);
+        }
+
+    })
+</script>

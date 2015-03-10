@@ -1,0 +1,12 @@
+{
+  "name": "EcoSISDataTool",
+  "description": "EcoSIS Data Tool",
+  "version": "0.0.1",
+  "main": "index.html",
+  "window": {
+    "icon": "icon.png",
+    "toolbar": false,
+    "width": 900,
+    "height": 700
+  }
+}

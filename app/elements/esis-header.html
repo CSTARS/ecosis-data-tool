@@ -1,0 +1,24 @@
+<dom-module id="esis-header">
+    <style>
+        esis-header {
+            display: block;
+            margin: 0 !important;
+        }
+    </style>
+    <template>
+        <div class="navbar-header">
+            <a class="btn btn-default" style="vertical-align: top"><i class="fa fa-reorder"></i></a>
+            <span style="font-size: 20px; margin-top: 5px; display: inline-block">EcoSIS Data Tool</span>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is : 'esis-header',
+
+        ready : function() {
+            this.className = 'navbar navbar-default';
+        }
+    })
+</script>

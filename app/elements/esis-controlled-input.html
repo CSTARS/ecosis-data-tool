@@ -1,0 +1,21 @@
+<dom-module id="esis-controlled-input">
+    <template>
+        Options: <esis-selector id="selector"></esis-selector>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is : 'esis-controlled-input',
+
+        properties : {
+            attribute : String,
+            value : String
+        },
+
+        attached : function() {
+            this.$.selector.update(Esis.schema[this.attribute].values);
+        }
+
+    });
+</script>

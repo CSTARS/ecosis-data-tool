@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EcoSIS Data Tool</title>
+  <script>
+    process.on("uncaughtException", function(e) { 
+      debugger;
+      console.log(e); 
+    });
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--<link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.css">-->
+  <link rel="stylesheet" href="styles/superhero.css">
+  <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.css">
+
+  <script src="../polymer/components/webcomponentsjs/webcomponents.js"></script>
+  <script src="../bower_components/jquery/dist/jquery.js"></script> 
+
+  <script src="scripts/app.js"></script>
+
+  <link rel="import" href="../polymer/components/polymer/polymer.html" />
+  <link rel="import" href="../polymer/components/layout/layout.html" />
+
+  <link rel="import" href="elements/esis-popup.html" />
+  <link rel="import" href="elements/esis-header.html" />
+  <link rel="import" href="elements/esis-selector.html" />
+  <link rel="import" href="elements/esis-usda-input.html" />
+  <link rel="import" href="elements/esis-controlled-input.html" />
+  <link rel="import" href="elements/esis-spectra-list.html" />
+  <link rel="import" href="elements/esis-file-manager.html" />
+  <link rel="import" href="elements/esis-metadata-attribute.html" />
+  <link rel="import" href="elements/esis-attribute-panel.html" />
+
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<!--
+  
+-->
+
+  <!-- Add Refresh -->
+  <script>
+    $(window).on('keypress', function(e){
+      if( e.ctrlKey && e.which == 18 ) { // ctrl + r
+        window.location.reload();
+      } else if ( e.ctrlKey && e.which == 9 ) { // ctrl + i
+        require('nw.gui').Window.get().showDevTools();
+      }
+    });
+  </script>
+
+</head>
+<body fullbleed>
+
+  <esis-popup header="File Manager">
+    <esis-file-manager class="popup-body"></esis-file-manager>
+  </esis-popup>
+
+  <div class="fit layout vertical">
+    <esis-header></esis-header>
+
+    <div style="position: relative" class="flex">
+      <esis-spectra-list class="fit" id="list" style="display:none"></esis-spectra-list>
+      <esis-attribute-panel class="fit" id="attributes" style="display:none"></esis-attribute-panel>
+    </div>
+  </div>
+</body>
+</html>

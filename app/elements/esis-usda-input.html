@@ -1,0 +1,168 @@
+<dom-module id="esis-usda-input">
+    <style>
+        esis-usda-input {
+            display: block;
+        }
+
+        esis-usda-input .panel.panel-primary {
+            margin-left: 5px;
+            margin-right: 5px;
+            border: 1px solid #2b3e50;
+            display: inline-block;
+        }
+
+        esis-usda-input .panel.panel-primary:hover {
+            border: 1px solid #df691a;
+            text-shadow: 2px 2px #df691a;
+        }
+    </style>
+
+    <template>
+
+        <template id="currentTemplate" is="x-template">
+            <div class="panel panel-info" style="display: inline-block">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <span>{{acceptedsymbol}}</span>: 
+                        <small>{{commonname}}</small>
+
+                        <a style="float: right; cursor:pointer" on-click="openLink" value$="{{acceptedsymbol}}"><i class="fa fa-info-circle"></i></a>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <b>Scientific Name: </b><span>{{scientificname}}</span>
+                        </li>
+                        <li class="list-group-item">
+                            <b>Category: </b><span>{{category}}</span>
+                        </li>
+                        <li class="list-group-item">
+                            <b>Genus: </b><span>{{genus}}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </template>
+
+        <div id="current"></div>
+
+        <div>
+            <h4><i class="fa fa-search"></i> Search</h4>
+            <input id="searchInput" class="form-control" on-change="search" on-keypress="onKeyPress" /> 
+        </div>
+
+        <div hidden$="{{!searching}}">
+            <i class="fa fa-spinner fa-spin"></i> Searching ...
+        </div>
+
+        <div style="padding-top:15px">
+            <template is="x-repeat" items="{{results}}">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <a style="cursor:pointer" on-click="setValue" value$="{{item.acceptedsymbol}}"><i class="fa fa-plus"></i></a>&nbsp;&nbsp;
+                            <span>{{item.acceptedsymbol}}</span>: 
+                            <small>{{item.commonname}}</small>
+
+                            <a style="float: right; cursor:pointer" on-click="openLink" value$="{{item.acceptedsymbol}}"><i class="fa fa-info-circle"></i></a>
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <b>Scientific Name: </b><span>{{item.scientificname}}</span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Category: </b><span>{{item.category}}</span>
+                            </li>
+                            <li class="list-group-item">
+                                <b>Genus: </b><span>{{item.genus}}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+</dom-module>
+
+<script>
+(function(){
+    var shell = require('nw.gui').Shell;
+
+    Polymer({
+        is: 'esis-usda-input',
+        
+        configure : function() {
+            return {
+                rest : 'http://dev-search.ecospectra.org/rest/usda/search?q=',
+                get : 'http://dev-search.ecospectra.org/rest/usda/get?code=',
+                results : [],
+                searching : false
+            }
+        },
+
+        properties : {
+            value : {
+                type : String,
+                observer : 'onValueChange'
+            }
+        },
+
+        onKeyPress : function(e) {
+            if( e.which == 13 ) this.search();
+        },
+
+        onValueChange : function() {
+            this.$.current.innerHTML = '';
+            if( !this.value ) return;
+
+            $.get(this.rest+this.value, function(resp){
+                if( resp.error ) return alert('Error in search :(');
+                if( resp.length == 0 ) return alert('Error: invalid code');
+
+                for( var key in resp[0] ) resp[0][key.toLowerCase().replace(/ /g,'')] = resp[0][key];
+
+                var t = this.$.currentTemplate.stamp(resp[0]);
+                this.$.current.appendChild(t.root);
+            }.bind(this));
+        },
+
+        search : function() {
+            if( this.searching ) return;
+
+            this.results = [];
+
+            if( this.$.searchInput.value == '' ) return;
+            this.searching = true;
+
+            $.get(this.rest+this.$.searchInput.value, function(resp){
+                this.searching = false;
+
+                if( resp.error ) return alert('Error in search :(');
+                this.setResults(resp);
+            }.bind(this));
+        },
+
+        setResults : function(results) {
+            for( var i = 0; i < results.length; i++ ) {
+                for( var key in results[i] ) results[i][key.toLowerCase().replace(/ /g,'')] = results[i][key];
+            }
+            this.results = results;
+        },
+
+        setValue : function(e) {
+            this.value = e.currentTarget.getAttribute('value');
+            this.fire('usda-value-change',{
+                attribute : 'USDA Code',
+                value : this.value
+            });
+        },
+
+        openLink : function(e) {
+            shell.openExternal('http://plants.usda.gov/core/profile?symbol='+e.currentTarget.getAttribute('value'));
+        }
+    });
+})();
+</script>

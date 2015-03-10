@@ -1,0 +1,52 @@
+<dom-module id="esis-selector">
+    <style>
+        esis-selector {
+            display: inline-block;
+        }
+    </style>
+    <template>
+        <select class="form-control"></select>
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is : 'esis-selector',
+
+        properties : {
+            data : Object,
+            includeEmpty : Boolean
+        },
+
+        configure : function() {
+            return {
+                data : [],
+                includeEmpty : true
+            }
+        },
+
+        update : function(data) {
+            if( data ) this.data = data;
+
+            var ele = $(this.querySelector('select')).html('<option></option>');
+
+            if( Array.isArray(this.data) ) {
+                for( var i = 0; i < this.data.length; i++ ) {
+                    ele.append(
+                        $('<option value="'+this.data[i]+'">'+this.data[i]+'</option>')
+                    );
+                }
+            } else {
+                for( var key in this.data ) {
+                    ele.append(
+                        $('<option value="'+this.data[key]+'">'+key+'</option>')
+                    );
+                }
+            }
+        },
+
+        getValue : function() {
+            return this.querySelector('select').value;
+        }
+    });
+</script>
