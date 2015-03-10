@@ -11,15 +11,23 @@
         <a class="btn btn-default" on-click="chooseFile">Select File</a>
 
         <h4 class="page-header">Manage</h4>
+        <div id="files"></div>
     </template>
 </dom-module>
 
+<script src="./scripts/elements/FileManager.js"></script>
 <script>
-(function(){
-    var importer = require('./scripts/import/index.js');
-
     Polymer({
         is: 'esis-file-manager',
+
+        mixins : [FileManager],
+
+        configure : function() {
+            return {
+                currentFile : {},
+                files : []
+            }
+        },
 
         chooseFile : function() {
             this.$.fileDialog.click();
@@ -29,15 +37,19 @@
             this.select(this.$.fileDialog.value);
         },
 
-        select : function(file) {
-            importer.run(file, this.onFileImported.bind(this));
-        },
+        redrawFiles : function() {
+            for( var i = 0; i < this.files.length; i++ ) {
+                var panel = '<div><h5>'+this.files[i].name+'</h5><div><ul>';
 
-        onFileImported : function(err, resp) {
-            if( err ) return console.log(err);
-            console.log(resp);
+                for( var j = 0; j < this.files[i].tables.length; j++ ) {
+                    panel += '<li>Sheet '+j+': '+this.files[i].formats.type+' '+this.files[i].formats.orientation;
+                }
+                panel += '</ul></div>'
+            }
+            panel += '</div>'
+            this.$.files.innerHTML = panel;
         }
-    });
 
-})();
+
+    });
 </script>

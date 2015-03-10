@@ -18,6 +18,6 @@ exports.run = function(file, callback) {
             callback(err, [resp]);
         });
     } else {
-        console.log('not supported')
+        alert('not supported')
     }
 }
