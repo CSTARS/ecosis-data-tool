@@ -6,16 +6,20 @@
     </style>
 
     <template>
-        <h4 class="page-header" style="margin-top:0;padding-top:0">Add</h4>
-        <input style="display:none;" id="fileDialog" type="file" on-change="onSelect" />
-        <a class="btn btn-default" on-click="chooseFile">Select File</a>
+        <div id="add">
+            <input style="display:none;" id="fileDialog" type="file" on-change="onSelect" />
+            <a class="btn btn-primary" on-click="chooseFile"><i class="fa fa-plus"></i> Add File</a>
+        </div>
+        <div id="importingLabel" style="display:none">
+            <i class="fa fa-spinner fa-spin"></i> Importing...
+        </div>
 
         <h4 class="page-header">Manage</h4>
         <div id="files"></div>
     </template>
 </dom-module>
 
-<script src="./scripts/elements/FileManager.js"></script>
+<script src="../scripts/elements/FileManager.js"></script>
 <script>
     Polymer({
         is: 'esis-file-manager',
@@ -38,16 +42,45 @@
         },
 
         redrawFiles : function() {
+            var panel = '';
             for( var i = 0; i < this.files.length; i++ ) {
-                var panel = '<div><h5>'+this.files[i].name+'</h5><div><ul>';
+                panel += '<div><h5>'+this.files[i].name+'</h5><div><table class="table">';
+
 
                 for( var j = 0; j < this.files[i].tables.length; j++ ) {
-                    panel += '<li>Sheet '+j+': '+this.files[i].formats.type+' '+this.files[i].formats.orientation;
+                    panel += '<tr><td>Sheet '+j+'</td>'+
+                            '<td>'+this.createFormatSelector(i, j,this.files[i].formats[j].type)+'</td>'+
+                            '<td>'+this.createOrientationSelector(i, j, this.files[i].formats[j].orientation)+'</td>'+
+                            '<td></td></tr>';
                 }
-                panel += '</ul></div>'
+                panel += '</table></div>'
             }
             panel += '</div>'
             this.$.files.innerHTML = panel;
+        },
+
+        setImporting : function(importing) {
+            if( importing ) {
+                $(this.$.add).hide();
+                $(this.$.importingLabel).show();
+            } else {
+                $(this.$.add).show();
+                $(this.$.importingLabel).hide();
+            }
+        },
+
+        createFormatSelector : function(file, table, value) {
+            return '<select id="'+file+'-'+table+'" class="format-selector">'+
+                    '<option value="data" '+(value == 'data' ? 'selected' : '')+'>Data</option>'+
+                    '<option value="metadata" '+(value == 'metadata' ? 'selected' : '')+'>Metadata</option>'+
+                '</select>';
+        },
+
+        createOrientationSelector : function(file, table, value) {
+            return '<select id="'+file+'-'+table+'" class="format-selector">'+
+                    '<option value="row" '+(value == 'row' ? 'selected' : '')+'>Row</option>'+
+                    '<option value="col" '+(value == 'col' ? 'selected' : '')+'>Column</option>'+
+                '</select>';
         }
 
 

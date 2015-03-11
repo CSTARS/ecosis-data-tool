@@ -1,12 +1,16 @@
 
 exports.run = function(table, format) {
+    if( table.length == 0 ) return [];
+
     var headerRange = getHeader(table);
+
     var globalMetadata = getHeaderData(headerRange, table);
 
     var start = (headerRange[1] == -1) ? 0 : headerRange[1]; 
 
     var spectra = [];
     var datarows = getDataRows(start, table, format);
+
 
     if( format == 'row' ) {
         for( var i = start+1; i < table.length; i++ ) {
@@ -51,13 +55,13 @@ function getDataRows(start, table, format) {
 
     if( format == 'row' ) {
         for( var i = 0; i < table[start].length; i++ ) {
-            if( isDataAttr(table[start][i]) ) datarow[i] = true;
-            else datarow[i] = false;
+            if( isDataAttr(table[start][i]) ) datarows[i] = true;
+            else datarows[i] = false;
         }
     } else {
         for( var i = start; i < table.length; i++ ) {
-            if( isDataAttr(table[i][0]) ) datarow[i] = true;
-            else datarow[i] = false;
+            if( isDataAttr(table[i][0]) ) datarows[i] = true;
+            else datarows[i] = false;
         }
     }
 
@@ -74,7 +78,7 @@ function isDataAttr(attr) {
 }
 
 
-function getHeaderRange(range, table) {
+function getHeaderData(range, table) {
     if( range[0] == -1 || range[1] == -1 ) return {};
 
     var metadata = {};
@@ -98,6 +102,7 @@ function getHeader(table) {
         if( isEmptyRow(table[i]) ) {
             return [start, i];
         }
+        i++;
     }
     
     return [-1, -1];

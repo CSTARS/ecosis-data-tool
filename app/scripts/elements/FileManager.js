@@ -1,16 +1,22 @@
 var FileManager = (function(){
 
-    var importer = require('../import/index.js');
-    var tableParser = require('../parse/tableParser.js');
+    var importer = require('./scripts/import/index.js');
+    var tableParser = require('./scripts/parser/tableParser.js');
 
-    select : function(file) {
+    function select(file) {
         this.currentFile = {
             name : file
         };
-        importer.run(file, this.onFileImported.bind(this));
-    },
+        this.setImporting(true);
+        
+        setTimeout(function(){
+            importer.run(file, this.onFileImported.bind(this));
+        }.bind(this), 100);
+    }
 
-    onFileImported : function(err, resp) {
+    function onFileImported(err, resp) {
+        this.setImporting(false);
+
         if( err ) {
             this.currentFile.error = err;
             return console.log(err);
@@ -18,6 +24,7 @@ var FileManager = (function(){
         
         this.currentFile.tables = resp;
         this.currentFile.formats = [];
+        this.currentFile.spectra = [];
 
 
         for( var i = 0; i < this.currentFile.tables.length; i++ ) {
@@ -26,11 +33,24 @@ var FileManager = (function(){
                 type : 'data' 
             });
 
-            this.currentFile.spectra = tableParser.run(this.currentFile.tables[i], 'row');
+            var spectra = tableParser.run(this.currentFile.tables[i], 'row');
+            for( var j = 0; j < spectra.length; j++ ) {
+                spectra[j].__info = {
+                    sheet : i
+                }
+                this.currentFile.spectra.push(spectra[j]);
+            }
         }
 
-        this.files.push(table);
-        this.redrawTables()
+        this.files.push(this.currentFile);
+        this.redrawFiles();
+
+        this.fire('data-update', this.files);
+    }
+
+    return {
+        select : select,
+        onFileImported : onFileImported
     }
 
 })();
