@@ -11,7 +11,7 @@
 
         <h2 class="page-header">
             <span>{{attribute}}</span>:
-            <small style="color:#888">{{value}}</small>
+            <small style="color:#888" id="attrLabel"></small>
         </h2>
         <div class="help-block">{{description}}</div>
 
@@ -56,6 +56,7 @@
         update : function(attribute, value) {
             this.attribute = attribute;
             this.value = value;
+            this.$.attrLabel.innerHTML = value;
 
             if( !this.attribute ) return;
 
@@ -92,6 +93,9 @@
         },
 
         onValueChange : function(e) {
+            this.value = e.target.value;
+            this.$.attrLabel.innerHTML = e.target.value;
+
             this.fire('value-change',{
                 attribute : this.attribute,
                 value : e.target.value

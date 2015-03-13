@@ -74,6 +74,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <a class="btn btn-link" on-click="back"><i class="fa fa-arrow-left"></i> Spectra List</a>
                     </div>
 
                     <div class="flex" style="overflow: auto">
@@ -182,6 +184,10 @@
             }
 
             setTimeout(this.updateCounts.bind(this), 50);
+        },
+
+        back : function() {
+            Esis.showSpectraList();
         }
 
     });

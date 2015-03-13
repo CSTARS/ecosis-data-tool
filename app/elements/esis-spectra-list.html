@@ -33,9 +33,8 @@
             this.popup.show();
         },
 
-        redrawTable : function(e) {
-            var files = e.detail;
-            debugger;
+        redrawTable : function() {
+            var files = Esis.files;
 
             var table = '<table class="table">'+
                 '<tr><th>File</th><th>Spectra</th><th>Attributes</th><th>Score</th><th>Data</th><th></th></tr>';
@@ -50,11 +49,20 @@
                              '<td>'+(Object.keys(files[i].spectra[j]).length-1)+'</td>'+
                              '<td><label class="label label-danger">0/0</label></td>'+
                              '<td>'+files[i].spectra[j].datapoints.length+'</td>'+
-                             '<td><i class="fa fa-edit"></i></td></tr>';
+                             '<td><i class="fa fa-edit" spid="'+i+'-'+j+'"></i></td></tr>';
                 }
             }
 
-            this.$.tableRoot.innerHTML = table+'</table>'
+            table = $(table);
+            table.find('.fa-edit').on('click', this.showSpectra.bind(this));
+
+            $(this.$.tableRoot).html('').append(table);
+        },
+
+        showSpectra : function(e) {
+            var parts = e.currentTarget.getAttribute('spid').split('-');
+            var spectra = Esis.files[parseInt(parts[0])].spectra[parseInt(parts[1])];
+            this.fire('show', spectra);
         }
     })
 </script>

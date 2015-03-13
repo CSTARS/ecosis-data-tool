@@ -6,16 +6,30 @@
     </style>
 
     <template>
-        <div id="add">
-            <input style="display:none;" id="fileDialog" type="file" on-change="onSelect" />
-            <a class="btn btn-primary" on-click="chooseFile"><i class="fa fa-plus"></i> Add File</a>
-        </div>
-        <div id="importingLabel" style="display:none">
-            <i class="fa fa-spinner fa-spin"></i> Importing...
+
+        <div id="main">
+            <div id="add">
+                <input style="display:none;" id="fileDialog" type="file" on-change="onSelect" />
+                <a class="btn btn-primary" on-click="chooseFile"><i class="fa fa-plus"></i> Add File</a>
+            </div>
+            <div id="importingLabel" style="display:none">
+                <i class="fa fa-spinner fa-spin"></i> Importing...
+            </div>
+
+            <h4 class="page-header">Manage</h4>
+            <div id="files"></div>
         </div>
 
-        <h4 class="page-header">Manage</h4>
-        <div id="files"></div>
+        <div id="info" style="display:none">
+            <h4 class="page-header" id="infoHeader"></h4>
+            <div>Spectra: <span id="infoCount"></span></div>
+            <h4>Schema</h4>
+            <div class="layout horizontal">
+                <div class="flex" id="infoMetadata"></div>
+                <div class="flex" id="infoData"></div>
+            </div>
+            <a class="btn btn-default" on-click="showMain">Back</a>
+        </div>
     </template>
 </dom-module>
 
@@ -43,20 +57,26 @@
 
         redrawFiles : function() {
             var panel = '';
-            for( var i = 0; i < this.files.length; i++ ) {
-                panel += '<div><h5>'+this.files[i].name+'</h5><div><table class="table">';
+            for( var i = 0; i < Esis.files.length; i++ ) {
+                panel += '<div><h5>'+Esis.files[i].name+'</h5><div><table class="table">';
 
+                panel += '<tr><th>Sheet</th><th>Type</th><th>Orientation</th><th>Spectra</th><th>Attributes</th><th></th></tr>'
 
-                for( var j = 0; j < this.files[i].tables.length; j++ ) {
-                    panel += '<tr><td>Sheet '+j+'</td>'+
-                            '<td>'+this.createFormatSelector(i, j,this.files[i].formats[j].type)+'</td>'+
-                            '<td>'+this.createOrientationSelector(i, j, this.files[i].formats[j].orientation)+'</td>'+
-                            '<td></td></tr>';
+                for( var j = 0; j < Esis.files[i].tables.length; j++ ) {
+                    panel += '<tr><td>'+j+'</td>'+
+                            '<td>'+this.createFormatSelector(i, j,Esis.files[i].formats[j].type)+'</td>'+
+                            '<td>'+this.createOrientationSelector(i, j, Esis.files[i].formats[j].orientation)+'</td>'+
+                            '<td class="'+i+'-'+j+'-scount">'+Esis.files[i].schema[j].spectraCount+'</td>'+
+                            '<td class="'+i+'-'+j+'-mcount">'+Esis.files[i].schema[j].metadata.length+'</td>'+
+                            '<td><a class="btn btn-link btn-info" style="margin:0" sheet="'+i+'-'+j+'"><i class="fa fa-info"></i></td></tr>';
                 }
                 panel += '</table></div>'
             }
             panel += '</div>'
             this.$.files.innerHTML = panel;
+
+            $(this).find('.orientation-selector').on('change', this.changeOrientation.bind(this));
+            $(this).find('.btn-info').on('click', this.showInfo.bind(this));
         },
 
         setImporting : function(importing) {
@@ -69,6 +89,29 @@
             }
         },
 
+        showMain : function() {
+            this.$.main.style.display = 'block';
+            this.$.info.style.display = 'none';
+        },
+
+        showInfo : function(e) {
+
+            var parts = e.currentTarget.getAttribute('sheet').split('-');
+            var fileIndex = parseInt(parts[0]);
+            var sheetIndex = parseInt(parts[1]);
+
+            this.$.main.style.display = 'none';
+            this.$.info.style.display = 'block';
+
+            var file = Esis.files[fileIndex];
+            var schema = Esis.files[fileIndex].schema[sheetIndex];
+
+            this.$.infoHeader.innerText = file.name+' - Sheet: '+sheetIndex;
+            this.$.infoCount.innerText = schema.spectraCount;
+            this.$.infoMetadata.innerText = schema.metadata.join(', ');
+            this.$.infoData.innerText = schema.data.join(', ');
+        },
+
         createFormatSelector : function(file, table, value) {
             return '<select id="'+file+'-'+table+'" class="format-selector">'+
                     '<option value="data" '+(value == 'data' ? 'selected' : '')+'>Data</option>'+
@@ -77,7 +120,7 @@
         },
 
         createOrientationSelector : function(file, table, value) {
-            return '<select id="'+file+'-'+table+'" class="format-selector">'+
+            return '<select id="'+file+'-'+table+'" class="orientation-selector">'+
                     '<option value="row" '+(value == 'row' ? 'selected' : '')+'>Row</option>'+
                     '<option value="col" '+(value == 'col' ? 'selected' : '')+'>Column</option>'+
                 '</select>';
