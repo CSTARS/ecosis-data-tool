@@ -23,10 +23,11 @@
         <div id="info" style="display:none">
             <h4 class="page-header" id="infoHeader"></h4>
             <div>Spectra: <span id="infoCount"></span></div>
-            <h4>Schema</h4>
-            <div class="layout horizontal">
-                <div class="flex" id="infoMetadata"></div>
-                <div class="flex" id="infoData"></div>
+            <div style="overflow: auto; max-height: 350px">
+                <h5 class="page-header">Schema <small>Metadata</small></h5>
+                <div id="infoMetadata"></div>
+                <h5 class="page-header">Schema <small>Data</small></h5>
+                <div id="infoData"></div>
             </div>
             <a class="btn btn-default" on-click="showMain">Back</a>
         </div>

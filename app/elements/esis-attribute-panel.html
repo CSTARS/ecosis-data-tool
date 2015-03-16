@@ -1,21 +1,21 @@
 <dom-module id="esis-attribute-panel">
     <style>
-        esis-attribute-panel {
+        :host {
             display : block;
         }
-        esis-attribute-panel .pager {
+        .pager {
             font-size: 22px;
             margin: 10px !important;
         }
-        esis-attribute-panel .pager a {
+        .pager a {
             border-radius: 30px !important;
             cursor: pointer;
         }
-        esis-attribute-panel a.list-group-item[active] {
+        a.list-group-item[active] {
             background-color: #485563;
             color: #df691a;
         }
-        esis-attribute-panel a.list-group-item {
+        a.list-group-item {
             cursor: pointer;
         } 
         .has-value {
@@ -31,11 +31,11 @@
             <div style="border-bottom: 1px solid #4e5d6c">
                 <ul class="pager">
                     <li class="previous">
-                        <a><i class="fa fa-chevron-left"></i></a>
+                        <a style="cursor:pointer" on-click="previous"><i class="fa fa-chevron-left"></i></a>
                     <li>
-                    <li>{{currentSpectraTitle}}</li>
+                    <li id="titleLabel"></li>
                     <li class="next">
-                        <a><i class="fa fa-chevron-right"></i></a>
+                        <a style="cursor:pointer" on-click="next"><i class="fa fa-chevron-right"></i></a>
                     <li>
                 </ul>
             </div>
@@ -114,12 +114,55 @@
                 selectedValue : '',
 
                 showAttribute : false,
-                currentSpectraTitle : 'Spectra #1',
                 ecosisAttributes : [],
                 customAttributes : [],
 
                 spectra : {},
             }
+        },
+
+        next : function() {
+            if( this.spectraIndex + 1 >= Esis.files[this.fileIndex].spectra.length ) return;
+            this.spectraIndex++;
+
+            this.setSpectra({
+                spectraIndex : this.spectraIndex,
+                fileIndex : this.fileIndex,
+                spectra : Esis.files[this.fileIndex].spectra[this.spectraIndex]
+            });
+        },
+
+        previous : function() {
+            if( this.spectraIndex - 1 < 0 ) return;
+            this.spectraIndex--;
+
+            this.setSpectra({
+                spectraIndex : this.spectraIndex,
+                fileIndex : this.fileIndex,
+                spectra : Esis.files[this.fileIndex].spectra[this.spectraIndex]
+            });
+        },
+
+        setSpectra : function(details) {
+            this.spectra = details.spectra;
+            this.fileIndex = details.fileIndex;
+            this.spectraIndex = details.spectraIndex;
+
+            this.customAttributes = [];
+            for( var key in this.spectra ) {
+                if( key == 'datapoints' || key == '__info' ) continue;
+                if( Esis.schema[key] !== undefined ) continue;
+                
+                this.customAttributes.push({name: key});
+            }
+
+            this.$.titleLabel.innerHTML = Esis.files[this.fileIndex].name.replace(/.*\//,'') + 
+                                            ' - Spectra #'+(this.spectraIndex+1);
+
+            // do we already have an attribute panel show?  if so, let's update
+            if( this.selected ) this.setSelected(this.selected);
+
+            this.updateCounts();
         },
 
         attached : function() {
@@ -149,6 +192,11 @@
             this.selectedValue = e.detail.value;
 
             this.updateCounts();
+            this.fire('spectra-updated',{
+                spectra : this.spectra,
+                fileIndex : this.fileIndex,
+                spectraIndex : this.spectraIndex
+            })
         },
 
         updateCounts : function() {
@@ -165,12 +213,9 @@
             }
 
             this.$.attrCounts.innerHTML = count + '/' + items.length;
-            var percent = count / items.length;
-            var className = 'pull-right label ';
-
-            if( percent < .25 ) this.$.attrCounts.className = className + 'label-danger';
-            else if( percent < 1 ) this.$.attrCounts.className = className + 'label-warning';
-            else this.$.attrCounts.className = className + 'label-success';
+            
+            var className = 'pull-right label '+Esis.getScoreClass(count);
+            this.$.attrCounts.className = className;
         },
 
         updateSelector : function() {

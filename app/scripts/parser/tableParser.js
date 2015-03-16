@@ -1,5 +1,5 @@
 
-exports.run = function(table, format) {
+exports.run = function(table, orientation) {
     if( table.length == 0 ) return [];
 
     var headerRange = getHeader(table);
@@ -9,27 +9,26 @@ exports.run = function(table, format) {
     var start = (headerRange[1] == -1) ? 0 : headerRange[1]; 
 
     var spectra = [];
-    var datarows = getDataRows(start, table, format);
+    var datarows = getDataRows(start, table, orientation);
 
-
-    if( format == 'row' ) {
+    if( orientation == 'row' ) {
         for( var i = start+1; i < table.length; i++ ) {
-            spectra.push(getSpectra(start, i, table, 'row', datarows));
+            spectra.push(getSpectra(start, i, table, orientation, datarows));
         }
     } else {
-        for( var i = 0; i < table[start].length; i++ ) {
-            spectra.push(getSpectra(start, i, table, 'row', datarows));
+        for( var i = 1; i < table[start].length; i++ ) {
+            spectra.push(getSpectra(start, i, table, orientation, datarows));
         }
     }
 
     return spectra;
 }
 
-function getSpectra(start, index, table, format, datarows) {
+function getSpectra(start, index, table, orientation, datarows) {
     var spectra = {};
     var datapoints = [];
 
-    if( format == 'row' ) {
+    if( orientation == 'row' ) {
         for( var i = 0; i < table[start].length; i++ ) {
             if( table[index].length <= i ) break;
 
@@ -50,10 +49,10 @@ function getSpectra(start, index, table, format, datarows) {
     return spectra;
 }
 
-function getDataRows(start, table, format) {
+function getDataRows(start, table, orientation) {
     var datarows = [];
 
-    if( format == 'row' ) {
+    if( orientation == 'row' ) {
         for( var i = 0; i < table[start].length; i++ ) {
             if( isDataAttr(table[start][i]) ) datarows[i] = true;
             else datarows[i] = false;

@@ -65,13 +65,14 @@ var FileManager = (function(){
             var sheetIndex = parseInt(parts[1]);
 
             var sheet = Esis.files[file].tables[sheetIndex];
+            var orientation = ele.val();
 
-            Esis.files[file].formats[sheetIndex].orientation = ele.val();
+            Esis.files[file].formats[sheetIndex].orientation = orientation;
 
             // remove all current spectra
             this.removeSpectra(file, sheetIndex);
 
-            var spectra = tableParser.run(sheet, ele.val());
+            var spectra = tableParser.run(sheet, orientation);
             for( var j = 0; j < spectra.length; j++ ) {
                 spectra[j].__info = {
                     sheet : sheetIndex

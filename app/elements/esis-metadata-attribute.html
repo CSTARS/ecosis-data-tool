@@ -10,10 +10,10 @@
     <template>
 
         <h2 class="page-header">
-            <span>{{attribute}}</span>:
+            <span id="attrTitle"></span>:
             <small style="color:#888" id="attrLabel"></small>
         </h2>
-        <div class="help-block">{{description}}</div>
+        <div class="help-block" id="attrDescription"></div>
 
         <div id="inputRoot"></div>
 
@@ -39,29 +39,18 @@
     Polymer({
         is : 'esis-metadata-attribute',
 
-        properties : {
-            attribute : {
-                type : String,
-            },
-        },
-
-        configure : function() {
-            return {
-                description : '',
-                values : '',
-                type : ''
-            }
-        },
 
         update : function(attribute, value) {
+            this.$.attrTitle.innerText = attribute;
             this.attribute = attribute;
+
             this.value = value;
             this.$.attrLabel.innerHTML = value;
 
             if( !this.attribute ) return;
 
             if( Esis.schema[this.attribute] ) {
-                this.description = Esis.schema[this.attribute].description;
+                this.$.attrDescription.innerText = Esis.schema[this.attribute].description;
 
 
                 this.values = Esis.schema[this.attribute].values;
@@ -106,6 +95,9 @@
         // first time it's stamped out.  I would have to guess a polymer bug :/
         // rebinding to this function on each stamp and catching custom event.
         usdaValueChange : function(e) {
+            this.value = e.detail.value;
+            this.$.attrLabel.innerHTML = e.detail.value;
+
             this.fire('value-change', e.detail);
         }
 
