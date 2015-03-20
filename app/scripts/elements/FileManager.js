@@ -4,17 +4,16 @@ var FileManager = (function(){
     var tableParser = require('./scripts/parser/tableParser.js');
 
     function select(file) {
-        this.currentFile = {
-            name : file
-        };
         this.setImporting(true);
         
         setTimeout(function(){
-            importer.run(file, this.onFileImported.bind(this));
+            importer.run(file, function(err, resp, parser){
+                this.onFileImported(err, resp, file, parser)
+            }.bind(this));
         }.bind(this), 100);
     }
 
-    function onFileImported(err, resp, parser) {
+    function onFileImported(err, resp, name, parser) {
         this.setImporting(false);
 
         if( err ) {
@@ -22,51 +21,22 @@ var FileManager = (function(){
             return console.log(err);
         }
 
-        this.currentFile.parser = parser;
+        this.currentFileIndex = Esis.files.add(name, parser);
 
         if( parser == 'spectra' ) {
 
-            this.currentFile.tables = [[]];
-            this.currentFile.formats = [];
-            this.currentFile.spectra = resp;
-            this.currentFile.schema = [];
+            Esis.files.addSheet(this.currentFileIndex, '', '', []);
+            Esis.files.setSheetSpectra(this.currentFileIndex, 0, resp);
 
-            // fake the sheet parameter, like with csv
+        } else {
+
             for( var i = 0; i < resp.length; i++ ) {
-                resp[i].__info = {sheet:0};
-            }
 
-        } else {
+                var sheetIndex = Esis.files.addSheet(this.currentFileIndex, 'data', 'row', resp[i]);
 
-            this.currentFile.tables = resp;
-            this.currentFile.formats = [];
-            this.currentFile.spectra = [];
-            this.currentFile.schema = [];
-
-            for( var i = 0; i < this.currentFile.tables.length; i++ ) {
-                this.currentFile.formats.push({
-                    orientation : 'row',
-                    type : 'data' 
-                });
-
-                var spectra = tableParser.run(this.currentFile.tables[i], 'row');
-                for( var j = 0; j < spectra.length; j++ ) {
-                    spectra[j].__info = {
-                        sheet : i
-                    }
-                    this.currentFile.spectra.push(spectra[j]);
-                }
-            }
-        }
-        
-        Esis.files.push(this.currentFile);
-
-        if( parser = 'spectra' ) {
-            this.setAttributeList(Esis.files.length - 1, 0);
-        } else {
-            var fileIndex = Esis.files.length -1;
-            for( var i = 0; i < Esis.files[fileIndex].tables.length; i++ ) {
-                this.setAttributeList(Esis.files.length - 1, i);
+                var parsedTable = tableParser.run(resp[i], 'row');
+                Esis.files.setSheetSpectra(this.currentFileIndex, sheetIndex, parsedTable.spectra);
+                Esis.files.setSheetAttributes(this.currentFileIndex, sheetIndex, parsedTable.attributes);
             }
         }
 
@@ -82,87 +52,103 @@ var FileManager = (function(){
             var ele = $(e.currentTarget);
             var parts = ele.attr('id').split('-');
 
-            var file = parseInt(parts[0]);
+            var fileIndex = parseInt(parts[0]);
             var sheetIndex = parseInt(parts[1]);
 
-            var sheet = Esis.files[file].tables[sheetIndex];
             var orientation = ele.val();
 
-            Esis.files[file].formats[sheetIndex].orientation = orientation;
-
-            // remove all current spectra
-            this.removeSpectra(file, sheetIndex);
-
-            var spectra = tableParser.run(sheet, orientation);
-            for( var j = 0; j < spectra.length; j++ ) {
-                spectra[j].__info = {
-                    sheet : sheetIndex
-                }
-                this.currentFile.spectra.push(spectra[j]);
-            }
-
-            this.setAttributeList(file, sheetIndex);
+            var resp = tableParser.run(Esis.files.getSheet(fileIndex, sheetIndex).table, orientation);
+            var sheet = Esis.files.updateSheetOrientation(fileIndex, sheetIndex, orientation, resp.spectra, resp.attributes);
 
             // TODO: no DOM stuff here...
-            $(this).find('.'+file+'-'+sheetIndex+'-scount').html(Esis.files[file].schema[sheetIndex].spectraCount);
-            $(this).find('.'+file+'-'+sheetIndex+'-mcount').html(Esis.files[file].schema[sheetIndex].metadata.length);
+            $(this).find('.'+fileIndex+'-'+sheetIndex+'-scount').html(sheet.spectra ? sheet.spectra.length : 0);
+            $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.schema.metadata.length);
 
             this.setImporting(false);
             this.fire('data-update', Esis.files);
         }.bind(this), 100);
     }
 
-    function setAttributeList(index, sheetIndex) {
-        var file = Esis.files[index];
+    function changeType(e) {
+        this.setImporting(true);
 
-        var attributes = {};
-        var data = {};
-        var c = 0;
-        for( var i = 0; i < file.spectra.length; i++ ) {
-            if( file.spectra[i].__info.sheet != sheetIndex ) continue;
+        setTimeout(function(){
+            var ele = $(e.currentTarget);
+            var parts = ele.attr('id').split('-');
 
-            for( var key in file.spectra[i] ) {
-                if( key == '__info' ) continue;
+            var fileIndex = parseInt(parts[0]);
+            var sheetIndex = parseInt(parts[1]);
 
-                if( key == 'datapoints' ) {
-                    for( var j = 0; j < file.spectra[i].datapoints.length; j++ ) {
-                        if( !data[file.spectra[i].datapoints[j].key] ) data[file.spectra[i].datapoints[j].key] = 1;
-                    }
-                    continue;
-                }
 
-                if( !attributes[key] ) attributes[key] = 1;
+            var type = ele.val();
+
+            var sheet = Esis.files.updateSheetType(fileIndex, sheetIndex, type);
+
+            if( type == 'metadata' ) {
+        
+
+                var selector = this.createJoinSelector(fileIndex, sheetIndex, sheet.attributes, '');
+
+                ele.parent().append(
+                    $('<div style="margin-top: 10px">'+
+                        '<div> Joined to: <span id="'+fileIndex+'-'+sheetIndex+'-joincount">0</span></div>' +
+                        '<div> Join On: '+selector+'</div>' +
+                      '</div>'
+                     )
+                );
+                ele.find('.join-selector').on('change', this.onChangeJoin.bind(this));
+
+                $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.attributes.length);
+            } else {
+
+                // remove selector
+                $('#join-selector-'+fileIndex+'-'+sheetIndex).parent().remove();
+
+                
+                $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.schema.metadata.length);
             }
 
-            c++;
-        }
+            // TODO: no DOM stuff here...
+            $(this).find('.'+fileIndex+'-'+sheetIndex+'-scount').html(sheet.spectra ? sheet.spectra.length : 0);
 
-        file.schema[sheetIndex] = {
-            spectraCount : c,
-            metadata : [],
-            data : []
-        };
-
-        for( var key in attributes ) file.schema[sheetIndex].metadata.push(key);
-        for( var key in data ) file.schema[sheetIndex].data.push(key);
+            this.setImporting(false);
+            this.fire('data-update', Esis.files);
+        }.bind(this), 100);
     }
+
+    function onChangeJoin(e) {
+        var id = $(e.currentTarget).attr('id');
+        var parts = id.split('-');
+        var fileIndex = parseInt(parts[0]);
+        var sheetIndex = parseInt(parts[1]);
+
+        var sheet = Esis.files.updateSheetJoin(fileIndex, sheetIndex, e.currentTarget.value);
+        Esis.updateJoinCounts();
+        
+        $('#'+fileIndex+'-'+sheetIndex+'-joincount').text(sheet.joinedCount);
+    }
+
 
     function removeSpectra(fileIndex, sheetIndex) {
         var file = Esis.files[fileIndex];
+        var removed = [];
 
         for( var i = file.spectra.length-1; i >= 0; i-- ) {
             if( sheetIndex == file.spectra[i].__info.sheet ) {
-                file.spectra.splice(i, 1);
+                removed.push(file.spectra.splice(i, 1)[0]);
             }
         }
+
+        return removed;
     }
 
     return {
         select : select,
         onFileImported : onFileImported,
         changeOrientation : changeOrientation,
-        setAttributeList : setAttributeList,
-        removeSpectra : removeSpectra
+        removeSpectra : removeSpectra,
+        changeType : changeType,
+        onChangeJoin : onChangeJoin
     }
 
 })();

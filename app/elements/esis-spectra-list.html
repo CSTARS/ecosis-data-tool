@@ -40,26 +40,32 @@
         },
 
         redrawTable : function() {
-            var files = Esis.files;
+            var files = Esis.files.get();
 
             var table = '<table class="table table-striped">'+
-                '<tr><th></th><th>File</th><th>Spectra</th><th>Attributes</th><th>Score</th><th>Data</th><th></th></tr>';
+                '<tr><th></th><th>File</th><th>Spectra</th><th>Attribute Count</th><th>Score</th><th>Data Points</th><th></th></tr>';
 
             var name, score, i, j, className;
 
             for( i = 0; i < files.length; i++ ) {
                 name = files[i].name.replace(/.*\//,'');
 
-                for( j = 0; j < files[i].spectra.length; j++ ) {
-                    score = Esis.getSpectraScore(files[i].spectra[j]);
-                    className = 'label '+Esis.getScoreClass(score);
 
-                    table += '<tr id="sp-list-'+i+'-'+j+'"><td><input type="checkbox" /></td><td>'+name+'</td>'+
-                             '<td>#'+j+'</td>'+
-                             '<td>'+(Object.keys(files[i].spectra[j]).length - 2)+'</td>'+
-                             '<td class="score"><label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label></td>'+
-                             '<td>'+files[i].spectra[j].datapoints.length+'</td>'+
-                             '<td><i class="fa fa-edit" style-scope="esis-spectra-list" spid="'+i+'-'+j+'"></i></td></tr>';
+                for( j = 0; j < files[i].sheets.length; j++ ) {
+                    var sheet = files[i].sheets[j];
+                    if( !sheet.spectra ) continue;
+
+                    for( z = 0; z < sheet.spectra.length; z++ ) {
+                        score = Esis.getSpectraScore(sheet.spectra[j]);
+                        className = 'label '+Esis.getScoreClass(score);
+
+                        table += '<tr id="sp-list-'+i+'-'+j+'-'+z+'"><td><input type="checkbox" /></td><td>'+name+'</td>'+
+                                 '<td>#'+z+'</td>'+
+                                 '<td>'+(Object.keys(sheet.spectra[j]).length - 1)+'</td>'+
+                                 '<td class="score"><label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label></td>'+
+                                 '<td>'+sheet.spectra[j].datapoints.length+'</td>'+
+                                 '<td><i class="fa fa-edit" style-scope="esis-spectra-list" spid="'+i+'-'+j+'-'+z+'"></i></td></tr>';
+                    }
                 }
             }
 
@@ -70,15 +76,12 @@
         },
 
         showSpectra : function(e) {
-            var parts = e.currentTarget.getAttribute('spid').split('-');
-            var fileIndex = parseInt(parts[0]);
-            var spectraIndex = parseInt(parts[1]);
+            var id = Esis.parseId(e.currentTarget.getAttribute('spid'));
 
-            var spectra = Esis.files[fileIndex].spectra[spectraIndex];
+            var spectra = Esis.getSheet(id[0], id[1]).spectra[id[2]];
             this.fire('show', {
                 spectra : spectra,
-                fileIndex : fileIndex,
-                spectraIndex : spectraIndex
+                id : id
             });
         },
 

@@ -102,51 +102,93 @@
 
         properties : {
             attributeList : {
-                type : Object
+                type : Object,
+                value : function() {
+                    return []
+                }
             }
         },
 
-        configure : function() {
-            return {
-                attributeList : [],
+        ready : function() {
+            this.selected = '';
+            this.selectedValue = '';
 
-                selected : '',
-                selectedValue : '',
+            this.showAttribute = false;
+            this.ecosisAttributes = [];
+            this.customAttributes = [];
 
-                showAttribute : false,
-                ecosisAttributes : [],
-                customAttributes : [],
+            this.currentIndex = [0, 0, 0];
 
-                spectra : {},
+            this.spectra = {};
+        },
+
+        attached : function() {
+            for( var key in Esis.schema ) {
+                this.attributeList.push(key);
             }
+            this.updateSelector();
         },
 
         next : function() {
-            if( this.spectraIndex + 1 >= Esis.files[this.fileIndex].spectra.length ) return;
-            this.spectraIndex++;
+            var found = false;
+            var files = Esis.files.get();
+            var id, spectra;
+
+            for( var i = this.currentIndex[0]; i < files.length; i++ ) {
+                for( var j = this.currentIndex[1]; j < files[i].sheets.length; j++ ) {
+                    if( !files[i].sheets[j].spectra ) continue;
+
+                    for( var z = this.currentIndex[2]+1; z < files[i].sheets[j].spectra.length; z++ ) {
+                        found = true;
+                        id = [i, j, z];
+                        spectra = files[i].sheets[j].spectra[z];
+                        break;
+                    }
+                    if( found ) break;
+                }
+                if( found ) break;
+            }
+
+            if( !found ) return;
+
 
             this.setSpectra({
-                spectraIndex : this.spectraIndex,
-                fileIndex : this.fileIndex,
-                spectra : Esis.files[this.fileIndex].spectra[this.spectraIndex]
+                id : id,
+                spectra : spectra
             });
         },
 
         previous : function() {
-            if( this.spectraIndex - 1 < 0 ) return;
-            this.spectraIndex--;
+            var found = false;
+            var files = Esis.files.get();
+            var id, spectra;
+
+            for( var i = this.currentIndex[0]; i >= 0; i-- ) {
+                for( var j = this.currentIndex[1]; j >= 0; j-- ) {
+                    if( !files[i].sheets[j].spectra ) continue;
+
+                    for( var z = this.currentIndex[2]-1; z >= 0; z-- ) {
+                        found = true;
+                        id = [i, j, z];
+                        spectra = files[i].sheets[j].spectra[z];
+                        break;
+                    }
+                    if( found ) break;
+                }
+                if( found ) break;
+            }
+
+            if( !found ) return;
 
             this.setSpectra({
-                spectraIndex : this.spectraIndex,
-                fileIndex : this.fileIndex,
-                spectra : Esis.files[this.fileIndex].spectra[this.spectraIndex]
+                id : id,
+                spectra : spectra
             });
         },
 
         setSpectra : function(details) {
             this.spectra = details.spectra;
-            this.fileIndex = details.fileIndex;
-            this.spectraIndex = details.spectraIndex;
+            this.currentIndex = details.id;
 
             this.customAttributes = [];
             for( var key in this.spectra ) {
@@ -163,13 +205,6 @@
             if( this.selected ) this.setSelected(this.selected);
 
             this.updateCounts();
-        },
-
-        attached : function() {
-            for( var key in Esis.schema ) {
-                this.attributeList.push(key);
-            }
-            this.updateSelector();
         },
 
         onAttrSelect : function(e) {

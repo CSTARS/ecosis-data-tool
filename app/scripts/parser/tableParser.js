@@ -21,7 +21,21 @@ exports.run = function(table, orientation) {
         }
     }
 
-    return spectra;
+    var attributes = [];
+    if( orientation == 'row' ) {
+        for( var i = 0; i < table[start].length; i++ ) {
+            attributes.push(table[start][i]);
+        }
+    } else {
+        for( var i = start; i < table.length; i++ ) {
+            attributes.push(table[i][0]);
+        }
+    }
+
+    return {
+        spectra : spectra,
+        attributes : attributes
+    }
 }
 
 function getSpectra(start, index, table, orientation, datarows) {

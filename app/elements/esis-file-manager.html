@@ -59,18 +59,21 @@
 
         redrawFiles : function() {
             var panel = '';
-            for( var i = 0; i < Esis.files.length; i++ ) {
-                var file = Esis.files[i];
-                panel += '<div><h5>'+file.name+'</h5><div><table class="table">';
+
+            var files = Esis.files.get();
+
+            for( var i = 0; i < files.length; i++ ) {
+                var file = files[i];
+                panel += '<div><h5>'+file.name+'</h5><div><table class="table table-striped">';
 
                 panel += '<tr><th>Sheet</th><th>Type</th><th>Orientation</th><th>Spectra</th><th>Attributes</th><th></th></tr>'
 
-                for( var j = 0; j < file.tables.length; j++ ) {
+                for( var j = 0; j < file.sheets.length; j++ ) {
                     panel += '<tr><td>'+j+'</td>'+
-                            '<td>'+ (file.parser == 'spectra' ? 'N/A' : this.createFormatSelector(i, j,Esis.files[i].formats[j].type))+'</td>'+
-                            '<td>'+ (file.parser == 'spectra' ? 'N/A' : this.createOrientationSelector(i, j, Esis.files[i].formats[j].orientation))+'</td>'+
-                            '<td class="'+i+'-'+j+'-scount">'+Esis.files[i].schema[j].spectraCount+'</td>'+
-                            '<td class="'+i+'-'+j+'-mcount">'+Esis.files[i].schema[j].metadata.length+'</td>'+
+                            '<td>'+ (file.parser == 'spectra' ? 'N/A' : this.createFormatSelector(i, j, file.sheets[j].type))+'</td>'+
+                            '<td>'+ (file.parser == 'spectra' ? 'N/A' : this.createOrientationSelector(i, j, file.sheets[j].orientation))+'</td>'+
+                            '<td class="'+i+'-'+j+'-scount">'+(file.sheets[j].spectra ? file.sheets[j].spectra.length : 0)+'</td>'+
+                            '<td class="'+i+'-'+j+'-mcount">'+file.sheets[j].schema.metadata.length+'</td>'+
                             '<td><a class="btn btn-link btn-info" style="margin:0" sheet="'+i+'-'+j+'"><i class="fa fa-info"></i></td></tr>';
                 }
                 panel += '</table></div>'
@@ -79,6 +82,8 @@
             this.$.files.innerHTML = panel;
 
             $(this).find('.orientation-selector').on('change', this.changeOrientation.bind(this));
+            $(this).find('.type-selector').on('change', this.changeType.bind(this));
+
             $(this).find('.btn-info').on('click', this.showInfo.bind(this));
         },
 
@@ -106,17 +111,17 @@
             this.$.main.style.display = 'none';
             this.$.info.style.display = 'block';
 
-            var file = Esis.files[fileIndex];
-            var schema = Esis.files[fileIndex].schema[sheetIndex];
+            var file = Esis.files.get(fileIndex);
+            var schema = file.sheets[sheetIndex].schema;
 
             this.$.infoHeader.innerText = file.name+(file.parser == 'spectra' ? '' : ' - Sheet: '+sheetIndex);
-            this.$.infoCount.innerText = schema.spectraCount;
+            this.$.infoCount.innerText = file.sheets[sheetIndex].spectra ? file.sheets[sheetIndex].spectra.length : 0;
             this.$.infoMetadata.innerText = schema.metadata.join(', ');
             this.$.infoData.innerText = schema.data.join(', ');
         },
 
         createFormatSelector : function(file, table, value) {
-            return '<select id="'+file+'-'+table+'" class="format-selector">'+
+            return '<select id="'+file+'-'+table+'" class="type-selector">'+
                     '<option value="data" '+(value == 'data' ? 'selected' : '')+'>Data</option>'+
                     '<option value="metadata" '+(value == 'metadata' ? 'selected' : '')+'>Metadata</option>'+
                 '</select>';
@@ -127,7 +132,18 @@
                     '<option value="row" '+(value == 'row' ? 'selected' : '')+'>Row</option>'+
                     '<option value="col" '+(value == 'col' ? 'selected' : '')+'>Column</option>'+
                 '</select>';
-        }
+        },
+
+        createJoinSelector : function(file, table, values, value) {
+            var html = '<select id="join-selector-'+file+'-'+table+'" class="join-selector"><option></option>';
+
+            for( var i = 0; i < values.length; i++ ) {
+                html += '<option value="'+values[i]+'" '+(value == values[i] ? 'selected' : '')+'>'+values[i]+'</option>';
+            }
+            html += '</select>';
+
+            return html;
+        },
 
 
     });
