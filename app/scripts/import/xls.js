@@ -9,8 +9,11 @@ function run(file, callback) {
     var sheet_name_list = workbook.SheetNames;
 
     sheet_name_list.forEach(function(y) {
-      worksheet = workbook.Sheets[y];
-      resp.push(excel.sheet_to_array(worksheet));
+        worksheet = workbook.Sheets[y];
+        var arr = excel.sheet_to_array(worksheet);
+
+        // check for badness ... todo, why?
+        if( Array.isArray(arr) ) resp.push(arr);
     });
 
     callback(null, resp);

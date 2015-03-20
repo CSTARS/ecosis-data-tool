@@ -14,41 +14,62 @@ var FileManager = (function(){
         }.bind(this), 100);
     }
 
-    function onFileImported(err, resp) {
+    function onFileImported(err, resp, parser) {
         this.setImporting(false);
 
         if( err ) {
             this.currentFile.error = err;
             return console.log(err);
         }
-        
-        this.currentFile.tables = resp;
-        this.currentFile.formats = [];
-        this.currentFile.spectra = [];
-        this.currentFile.schema = [];
 
+        this.currentFile.parser = parser;
 
-        for( var i = 0; i < this.currentFile.tables.length; i++ ) {
-            this.currentFile.formats.push({
-                orientation : 'row',
-                type : 'data' 
-            });
+        if( parser == 'spectra' ) {
 
-            var spectra = tableParser.run(this.currentFile.tables[i], 'row');
-            for( var j = 0; j < spectra.length; j++ ) {
-                spectra[j].__info = {
-                    sheet : i
+            this.currentFile.tables = [[]];
+            this.currentFile.formats = [];
+            this.currentFile.spectra = resp;
+            this.currentFile.schema = [];
+
+            // fake the sheet parameter, like with csv
+            for( var i = 0; i < resp.length; i++ ) {
+                resp[i].__info = {sheet:0};
+            }
+
+        } else {
+
+            this.currentFile.tables = resp;
+            this.currentFile.formats = [];
+            this.currentFile.spectra = [];
+            this.currentFile.schema = [];
+
+            for( var i = 0; i < this.currentFile.tables.length; i++ ) {
+                this.currentFile.formats.push({
+                    orientation : 'row',
+                    type : 'data' 
+                });
+
+                var spectra = tableParser.run(this.currentFile.tables[i], 'row');
+                for( var j = 0; j < spectra.length; j++ ) {
+                    spectra[j].__info = {
+                        sheet : i
+                    }
+                    this.currentFile.spectra.push(spectra[j]);
                 }
-                this.currentFile.spectra.push(spectra[j]);
+            }
+        }
+        
+        Esis.files.push(this.currentFile);
+
+        if( parser = 'spectra' ) {
+            this.setAttributeList(Esis.files.length - 1, 0);
+        } else {
+            var fileIndex = Esis.files.length -1;
+            for( var i = 0; i < Esis.files[fileIndex].tables.length; i++ ) {
+                this.setAttributeList(Esis.files.length - 1, i);
             }
         }
 
-        Esis.files.push(this.currentFile);
-
-        var fileIndex = Esis.files.length -1;
-        for( var i = 0; i < Esis.files[fileIndex].tables.length; i++ ) {
-            this.setAttributeList(Esis.files.length - 1, i);
-        }
         this.redrawFiles();
 
         this.fire('data-update', Esis.files);
@@ -82,6 +103,7 @@ var FileManager = (function(){
 
             this.setAttributeList(file, sheetIndex);
 
+            // TODO: no DOM stuff here...
             $(this).find('.'+file+'-'+sheetIndex+'-scount').html(Esis.files[file].schema[sheetIndex].spectraCount);
             $(this).find('.'+file+'-'+sheetIndex+'-mcount').html(Esis.files[file].schema[sheetIndex].metadata.length);
 

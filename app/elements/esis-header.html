@@ -7,18 +7,91 @@
     </style>
     <template>
         <div class="navbar-header">
-            <a class="btn btn-default" style="vertical-align: top"><i class="fa fa-reorder"></i></a>
-            <span style="font-size: 20px; margin-top: 5px; display: inline-block">EcoSIS Data Tool</span>
+            <span style="font-size: 20px; margin-top: 5px; display: inline-block">EcoSIS Data Tool</span>            
         </div>
+
+        <a class="btn btn-link pull-right" style="display:none" id="exportBtn" on-click="showExportPopup"><i class="fa fa-download"></i> Export</a>
+
+        <esis-popup id="exportPopup" header="Save Package">
+            <div class="popup-body">
+                Name: <input type="text" id="filenameInput" class="form-control" on-keyup="setFilename" />
+
+                <a class="btn btn-default" on-click="chooseFile"><i class="fa fa-folder-open-o"></i> Save To</a>
+                <input style="display:none;" id="fileDialog" type="file" on-change="onSelect" webkitdirectory />
+                <div id="selectedDir"></div>
+            </div>
+            <div class="popup-footer">
+                <a class="btn btn-default" on-click="save" style="display:none" id="save">Save</a>
+            </div>
+        </esis-popup>
+
     </template>
 </dom-module>
 
 <script>
-    Polymer({
-        is : 'esis-header',
 
-        ready : function() {
-            this.className = 'navbar navbar-default';
-        }
-    })
+    (function(){
+
+        var exporter = require('./scripts/export/export.js');
+
+        Polymer({
+            is : 'esis-header',
+
+            ready : function() {
+                this.className = 'navbar navbar-default';
+            },
+
+            attached : function() {
+                this.$.exportPopup.init();
+            },
+
+            showExport : function() {
+                this.$.exportBtn.style.display = 'block';
+            },
+
+            showExportPopup : function() {
+                this.$.exportPopup.show();
+            },
+
+            chooseFile : function() {
+                this.$.fileDialog.click();
+            },
+
+            onSelect : function(e) {
+                this.directory = this.$.fileDialog.value;
+                this.$.selectedDir.innerText = this.directory;
+                
+                if( this.fileName ) this.$.save.style.display = 'block';
+            },
+
+            setFilename : function() {
+                this.fileName = this.$.filenameInput.value;
+                if( this.directory ) this.$.save.style.display = 'block';
+            },
+
+            save : function() {
+                // TODO: show save btn updating
+
+                var data = [], i, j, file;
+
+                for( i = 0; i < Esis.files.length; i++ ) {
+                    if( !Esis.files[i].spectra ) continue;
+                    file = Esis.files[i];
+
+                    for( j = 0; j < file.spectra.length; j++ ) data.push(file.spectra[j]);
+                }
+                
+
+                exporter.run(this.directory, this.fileName, data, function(){
+                    alert('Success');
+                    this.fileName = '';
+                    this.$.filenameInput.value = '';
+                    this.$.exportPopup.hide();
+                }.bind(this));
+            }
+
+
+        })
+
+    })();
 </script>

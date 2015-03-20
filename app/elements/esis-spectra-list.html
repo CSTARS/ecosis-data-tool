@@ -4,6 +4,12 @@
             display: block;
             padding: 15px 5px;
         }
+        .fa-edit {
+            cursor: pointer;
+        }
+        .fa-edit:hover {
+            color: #df691a;
+        }
     </style>
     <template>
 
@@ -36,8 +42,8 @@
         redrawTable : function() {
             var files = Esis.files;
 
-            var table = '<table class="table">'+
-                '<tr><th>File</th><th>Spectra</th><th>Attributes</th><th>Score</th><th>Data</th><th></th></tr>';
+            var table = '<table class="table table-striped">'+
+                '<tr><th></th><th>File</th><th>Spectra</th><th>Attributes</th><th>Score</th><th>Data</th><th></th></tr>';
 
             var name, score, i, j, className;
 
@@ -48,12 +54,12 @@
                     score = Esis.getSpectraScore(files[i].spectra[j]);
                     className = 'label '+Esis.getScoreClass(score);
 
-                    table += '<tr id="sp-list-'+i+'-'+j+'"><td>'+name+'</td>'+
+                    table += '<tr id="sp-list-'+i+'-'+j+'"><td><input type="checkbox" /></td><td>'+name+'</td>'+
                              '<td>#'+j+'</td>'+
                              '<td>'+(Object.keys(files[i].spectra[j]).length - 2)+'</td>'+
                              '<td class="score"><label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label></td>'+
                              '<td>'+files[i].spectra[j].datapoints.length+'</td>'+
-                             '<td><i class="fa fa-edit" spid="'+i+'-'+j+'"></i></td></tr>';
+                             '<td><i class="fa fa-edit" style-scope="esis-spectra-list" spid="'+i+'-'+j+'"></i></td></tr>';
                 }
             }
 

@@ -1,8 +1,10 @@
 var importer = require('../../app/scripts/import/index.js');
 var tableParser = require('../../app/scripts/parser/tableParser.js');
 
+var exporter = require('../../app/scripts/export/export.js');
+
 var file = process.argv[2];
-var orientation = 'row';
+var orientation = 'column';
 
 if( process.argv.length > 3 ) orientation = process.argv[3];
 
@@ -24,8 +26,12 @@ function onImportComplete(err, tables) {
     logTime();
 
     var schema = getSchema(data);
-    console.log(schema.metadata);
-    console.log(schema.data);
+    //console.log(schema.metadata);
+    //console.log(schema.data);
+
+    exporter.run('/Users/jrmerz/Desktop', 'testExport', data, function(){
+        console.log('done');
+    });
 }
 
 function getSchema(spectra) {

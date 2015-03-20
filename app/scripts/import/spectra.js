@@ -27,7 +27,71 @@ function transform(json, callback) {
         return callback(e);
     }
 
-    // TODO: transform to our std json format...
+    // remove nulls
+    removeNulls(json);
 
-    callback(null, json);
+    // convert wvls & measurement arrays into spectra objects
+    var spectra = createSpectra(json);
+
+    // arrays appear to be all fubar.  if empty, remove.  if value == 1,
+    // set as value, if value == number of spectra, set for each, otherwise ignore
+    handleArrays(spectra);
+
+    callback(null, spectra);
+}
+
+
+function removeNulls(json) {
+    for( var key in json ) {
+        if( json[key] === null ) delete json[key];
+    }
+}
+
+function createSpectra(json) {
+    var measurements = json.measurements;
+    var wavelengths = json.wvls[0];
+
+    delete json.measurements;
+    delete json.wvls;
+
+    var str = JSON.stringify(json);
+    var spectra = [];
+
+    for( var i = 0; i < measurements.length; i++ ) {
+        var sp = JSON.parse(str);
+        sp.datapoints = [];
+
+        for( var j = 0; j < wavelengths.length; j++ ) {
+            sp.datapoints.push({
+                key : wavelengths[j]+'',
+                value : measurements[i][j]+''
+            });
+        }
+
+        spectra.push(sp);
+    }
+
+    return spectra;
+}
+
+function handleArrays(spectra) {
+    for( var i = 0; i < spectra.length; i++ ) {
+        var sp = spectra[i];
+
+        for( var key in sp) {
+            if( key == 'datapoints' ) continue;
+            if( !Array.isArray(sp[key]) ) continue;
+
+            if( sp[key].length == 0 ) {
+                delete sp[key];
+            } else if ( sp[key].length == spectra.length ) {
+                sp[key] = sp[key][i];
+            } else if ( sp[key].length == 1) {
+                sp[key] = sp[key][0];
+            } else {
+                delete sp[key]
+            }
+        }
+
+    }
 }

@@ -53,20 +53,22 @@
         },
 
         onSelect : function(e) {
+            this.fire('file-select')
             this.select(this.$.fileDialog.value);
         },
 
         redrawFiles : function() {
             var panel = '';
             for( var i = 0; i < Esis.files.length; i++ ) {
-                panel += '<div><h5>'+Esis.files[i].name+'</h5><div><table class="table">';
+                var file = Esis.files[i];
+                panel += '<div><h5>'+file.name+'</h5><div><table class="table">';
 
                 panel += '<tr><th>Sheet</th><th>Type</th><th>Orientation</th><th>Spectra</th><th>Attributes</th><th></th></tr>'
 
-                for( var j = 0; j < Esis.files[i].tables.length; j++ ) {
+                for( var j = 0; j < file.tables.length; j++ ) {
                     panel += '<tr><td>'+j+'</td>'+
-                            '<td>'+this.createFormatSelector(i, j,Esis.files[i].formats[j].type)+'</td>'+
-                            '<td>'+this.createOrientationSelector(i, j, Esis.files[i].formats[j].orientation)+'</td>'+
+                            '<td>'+ (file.parser == 'spectra' ? 'N/A' : this.createFormatSelector(i, j,Esis.files[i].formats[j].type))+'</td>'+
+                            '<td>'+ (file.parser == 'spectra' ? 'N/A' : this.createOrientationSelector(i, j, Esis.files[i].formats[j].orientation))+'</td>'+
                             '<td class="'+i+'-'+j+'-scount">'+Esis.files[i].schema[j].spectraCount+'</td>'+
                             '<td class="'+i+'-'+j+'-mcount">'+Esis.files[i].schema[j].metadata.length+'</td>'+
                             '<td><a class="btn btn-link btn-info" style="margin:0" sheet="'+i+'-'+j+'"><i class="fa fa-info"></i></td></tr>';
@@ -107,7 +109,7 @@
             var file = Esis.files[fileIndex];
             var schema = Esis.files[fileIndex].schema[sheetIndex];
 
-            this.$.infoHeader.innerText = file.name+' - Sheet: '+sheetIndex;
+            this.$.infoHeader.innerText = file.name+(file.parser == 'spectra' ? '' : ' - Sheet: '+sheetIndex);
             this.$.infoCount.innerText = schema.spectraCount;
             this.$.infoMetadata.innerText = schema.metadata.join(', ');
             this.$.infoData.innerText = schema.data.join(', ');

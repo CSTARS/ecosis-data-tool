@@ -41,6 +41,10 @@ Esis.app = (function(){
                 showSpectra();
             }).show();
 
+        $('esis-file-manager').on('file-select', function(){
+            $('esis-header')[0].showExport();
+        });
+
         document.querySelector('#attributes').addEventListener('spectra-updated', updateSpectraTable);
     }
 
