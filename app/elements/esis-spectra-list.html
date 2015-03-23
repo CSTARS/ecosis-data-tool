@@ -78,7 +78,7 @@
         showSpectra : function(e) {
             var id = Esis.parseId(e.currentTarget.getAttribute('spid'));
 
-            var spectra = Esis.getSheet(id[0], id[1]).spectra[id[2]];
+            var spectra = Esis.files.getSheet(id[0], id[1]).spectra[id[2]];
             this.fire('show', {
                 spectra : spectra,
                 id : id

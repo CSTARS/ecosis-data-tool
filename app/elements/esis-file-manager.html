@@ -48,6 +48,43 @@
             }
         },
 
+        attached : function() {
+            setTimeout(this.debug.bind(this), 500);
+        },  
+
+        // can be removed, for quickly setting files
+        debug : function() {
+            this.fire('file-select');
+            this.select('/Users/jrmerz/Desktop/t_data.csv', function(){
+
+                var ele = $('.orientation-selector[id="0-0"]').val('column');
+                ele.trigger('change');
+
+                // now add metadata
+                this.fire('file-select');
+
+                this.select('/Users/jrmerz/Desktop/t_meta.csv', function(){
+                    var ele = $('.type-selector[id="1-0"]').val('metadata');
+                    ele.trigger('change');
+
+                    setTimeout(function(){
+                        var ele = $('#1-0-join-selector').val('spectra');
+                        ele.trigger('change');
+
+                        setTimeout(function(){
+                            var spectra = Esis.files.getSheet(0, 0).spectra[0];
+
+                            $('esis-spectra-list')[0].fire('show',{
+                                spectra : spectra,
+                                id : [0,0,0]
+                            });
+                        });
+                    }.bind(this), 250);
+
+                }.bind(this));
+            }.bind(this));
+        },
+
         chooseFile : function() {
             this.$.fileDialog.click();
         },
@@ -130,12 +167,12 @@
         createOrientationSelector : function(file, table, value) {
             return '<select id="'+file+'-'+table+'" class="orientation-selector">'+
                     '<option value="row" '+(value == 'row' ? 'selected' : '')+'>Row</option>'+
-                    '<option value="col" '+(value == 'col' ? 'selected' : '')+'>Column</option>'+
+                    '<option value="column" '+(value == 'column' ? 'selected' : '')+'>Column</option>'+
                 '</select>';
         },
 
         createJoinSelector : function(file, table, values, value) {
-            var html = '<select id="join-selector-'+file+'-'+table+'" class="join-selector"><option></option>';
+            var html = '<select id="'+file+'-'+table+'-join-selector" class="join-selector"><option></option>';
 
             for( var i = 0; i < values.length; i++ ) {
                 html += '<option value="'+values[i]+'" '+(value == values[i] ? 'selected' : '')+'>'+values[i]+'</option>';

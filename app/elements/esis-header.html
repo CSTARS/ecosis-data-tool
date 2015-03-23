@@ -73,14 +73,22 @@
                 // TODO: show save btn updating
 
                 var data = [], i, j, file;
+                var files = Esis.files.get();
 
-                for( i = 0; i < Esis.files.length; i++ ) {
-                    if( !Esis.files[i].spectra ) continue;
-                    file = Esis.files[i];
+                for( i = 0; i < files.length; i++ ) {
 
-                    for( j = 0; j < file.spectra.length; j++ ) data.push(file.spectra[j]);
+                    for( j = 0; j < files[i].sheets.length; j++ ) {
+                        
+                        if( files[i].sheets[j].type != 'data' || !files[i].sheets[j].spectra ) continue;
+                        sheet = files[i].sheets[j];
+
+                        for( z = 0; z < sheet.spectra.length; z++ ) data.push(sheet.spectra[z]);
+
+                    }
                 }
-                
+            
+                this.joinOnMetadata(data);
+console.log(data);
 
                 exporter.run(this.directory, this.fileName, data, function(){
                     alert('Success');
@@ -88,6 +96,20 @@
                     this.$.filenameInput.value = '';
                     this.$.exportPopup.hide();
                 }.bind(this));
+            },
+
+            joinOnMetadata : function(spectra) {
+                for( var i = 0; i < spectra.length; i++ ) {
+
+                    var metadata = Esis.getJoinedMetadata(spectra[i]);
+                    for( var j = 0; j < metadata.length; j++ ) {
+                    
+                        for( var key in metadata[j] ) {
+                            if( spectra[i][key] !== undefined ) continue;
+                            spectra[i][key] = metadata[j][key];
+                        }       
+                    }
+                }
             }
 
 

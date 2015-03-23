@@ -32,6 +32,8 @@ Esis.files = (function(){
         setSheetAttributes(fileIndex, sheetIndex, attributes);
         setSheetSpectra(fileIndex, sheetIndex, spectra);
 
+        Esis.updateJoinCounts();
+
         return files[fileIndex].sheets[sheetIndex];
     }
 
@@ -51,14 +53,26 @@ Esis.files = (function(){
             }
         }
 
+        Esis.updateJoinCounts();
+
         return sheet;
     }
 
     function updateSheetJoin(fileIndex, sheetIndex, join) {
-        files[fileIndex].sheets[sheetIndex].join = join;
+        var sheet = files[fileIndex].sheets[sheetIndex];
+        sheet.join = join;
+
+        // set the join index
+        sheet.joinIndex = {};
+        for( var i = 0; i < sheet.metadata.length; i++ ) {
+            if( sheet.metadata[i][join] === undefined ) continue;
+
+            sheet.joinIndex[sheet.metadata[i][join]] = i;
+        }
+
         Esis.updateJoinCounts();
 
-        return files[fileIndex].sheets[sheetIndex];
+        return sheet;
     }
 
     function _setSchema(sheet) {
@@ -111,6 +125,7 @@ Esis.files = (function(){
         updateSheetOrientation : updateSheetOrientation,
         setSheetAttributes : setSheetAttributes,
         setSheetSpectra : setSheetSpectra,
+        updateSheetJoin : updateSheetJoin,
         addSheet : addSheet,
         getSheet : getSheet
     }

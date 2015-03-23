@@ -25,6 +25,15 @@
             </esis-controlled-input>
         </template>
 
+        <template id="customAttribute" is="x-template">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="New Value">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">Update</button>
+                </span>
+            </div>
+        </template>
+
         <template id="usda" is="x-template">
             <esis-usda-input 
                 value="{{value}}"
@@ -58,7 +67,12 @@
 
                 this.createInput();
             } else {
-                alert('Unrecgonized Attribute: '+this.attribute);
+                
+                this.$.attrDescription.innerText = 'Custom attribute for this dataset';
+                this.values = null;
+                this.type = 'custom';
+
+                this.createInput();
             }
         },
 
@@ -78,16 +92,28 @@
                     attribute : this.attribute
                 });
                 this.$.inputRoot.appendChild(t.root);
+            } else if ( this.type == 'custom' ) {
+                var t = this.$.customAttribute.stamp();
+                this.$.inputRoot.appendChild(t.root);
+
+                $(this.$.inputRoot).find('.btn').on('click', function(){
+                    this.setValueChange($(this.$.inputRoot).find('input').val());
+                    $(this.$.inputRoot).find('input').val('');
+                }.bind(this));
             }
         },
 
         onValueChange : function(e) {
-            this.value = e.target.value;
-            this.$.attrLabel.innerHTML = e.target.value;
+            this.setValueChange(e.target.value);
+        },
+
+        setValueChange : function(val) {
+            this.value = val;
+            this.$.attrLabel.innerHTML = val;
 
             this.fire('value-change',{
                 attribute : this.attribute,
-                value : e.target.value
+                value : val
             });
         },
 

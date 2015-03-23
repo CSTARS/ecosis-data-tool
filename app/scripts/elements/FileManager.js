@@ -3,12 +3,14 @@ var FileManager = (function(){
     var importer = require('./scripts/import/index.js');
     var tableParser = require('./scripts/parser/tableParser.js');
 
-    function select(file) {
+    function select(file, callback) {
         this.setImporting(true);
         
         setTimeout(function(){
+            console.log('running importer on: '+file);
             importer.run(file, function(err, resp, parser){
-                this.onFileImported(err, resp, file, parser)
+                this.onFileImported(err, resp, file, parser);
+                if( callback ) callback();
             }.bind(this));
         }.bind(this), 100);
     }
@@ -90,19 +92,19 @@ var FileManager = (function(){
                 var selector = this.createJoinSelector(fileIndex, sheetIndex, sheet.attributes, '');
 
                 ele.parent().append(
-                    $('<div style="margin-top: 10px">'+
+                    $('<div style="margin-top: 10px" id="'+fileIndex+'-'+sheetIndex+'-fm-metadata-info">'+
                         '<div> Joined to: <span id="'+fileIndex+'-'+sheetIndex+'-joincount">0</span></div>' +
                         '<div> Join On: '+selector+'</div>' +
                       '</div>'
                      )
                 );
-                ele.find('.join-selector').on('change', this.onChangeJoin.bind(this));
+                ele.parent().find('.join-selector').on('change', this.onChangeJoin.bind(this));
 
                 $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.attributes.length);
             } else {
 
                 // remove selector
-                $('#join-selector-'+fileIndex+'-'+sheetIndex).parent().remove();
+                $('#'+fileIndex+'-'+sheetIndex+'-fm-metadata-info').remove();
 
                 
                 $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.schema.metadata.length);

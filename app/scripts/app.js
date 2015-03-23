@@ -28,6 +28,28 @@ Esis.parseId = function(id) {
     return parts;
 }
 
+Esis.getJoinedMetadata = function(spectra) {
+    var metadata = [];
+
+    var files = Esis.files.get();
+    for( var i = 0; i < files.length; i++ ) {
+        var file = files[i];
+
+        for( var j = 0; j < file.sheets.length; j++ ) {
+            if( file.sheets[j].type == 'metadata' ) {
+                var joinOn = file.sheets[j].join;
+                if( spectra[joinOn] === undefined ) continue;
+
+                var index = file.sheets[j].joinIndex[spectra[joinOn]];
+                if( index !== undefined ) metadata.push(file.sheets[j].metadata[index]);
+            }
+        }
+    }
+
+    return metadata;
+}
+
+
 Esis.updateJoinCounts = function() {
     var files = Esis.files.get();
 
@@ -35,8 +57,8 @@ Esis.updateJoinCounts = function() {
         var file = files[i];
 
         for( var j = 0; j < file.sheets.length; j++ ) {
-            if( sheet[i].format == 'metadata' ) {
-                Esis.updateJoinCount(i, j, file.formats[j].join);
+            if( file.sheets[j].type == 'metadata' ) {
+                Esis.updateJoinCount(i, j, file.sheets[j].join);
             }
         }
     }
@@ -49,28 +71,25 @@ Esis.updateJoinCount = function(fileIndex, sheetIndex, joinOnAttr) {
 
     for( var i = 0; i < files.length; i++ ) {
         var file = files[i];
-        if( !file.spectra || file.type != 'data' ) continue;
+        
+        for( var j = 0; j < file.sheets.length; j++ ) {
+            var inspectSheet = file.sheets[j];
 
-        for( var j = 0; j < file.spectra.length; j++ ) {
-            var sp = files.spectra[i];
-            if( !sp[joinOnAttr] ) continue;
+            if( !inspectSheet.spectra || inspectSheet.type != 'data' ) continue;
 
-            var found = false;
-            for( var z = 0; z < sheet.metadata.length; z++ ) {
-                if( sheet.metadata[z][joinOnAttr] == sp[joinOnAttr] ) {
-                    found = true;
-                    break;
+            for( var z = 0; z < inspectSheet.spectra.length; z++ ){
+                var sp = inspectSheet.spectra[z];
+                if( !sp[joinOnAttr] ) continue;
+
+                if( sheet.joinIndex[sp[joinOnAttr]] !== undefined ) {
+                    count++;
                 }
-            }
-
-            if( found ) {
-                break;
-                count++;
             }
         }
     }
 
     sheet.joinedCount = count;
+    $('#'+fileIndex+'-'+sheetIndex+'-joincount').text(count);
 }
 
 

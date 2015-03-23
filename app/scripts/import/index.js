@@ -22,6 +22,7 @@ exports.run = function(file, callback) {
             callback(err, [resp], 'tsv');
         });
     } else {
+        console.log('Running spectra importer... ');
         spectra.run(file, function(err, resp){
             callback(err, resp, 'spectra');
         });

@@ -192,19 +192,41 @@
 
             this.customAttributes = [];
             for( var key in this.spectra ) {
-                if( key == 'datapoints' || key == '__info' ) continue;
+                if( key == 'datapoints' ) continue;
                 if( Esis.schema[key] !== undefined ) continue;
                 
                 this.customAttributes.push({name: key});
             }
 
-            this.$.titleLabel.innerHTML = Esis.files[this.fileIndex].name.replace(/.*\//,'') + 
-                                            ' - Spectra #'+(this.spectraIndex+1);
+            var metadata = Esis.getJoinedMetadata(this.spectra);
+            this.metadata = {};
+            for( var i = 0; i < metadata.length; i++ ) {
+                for( var key in metadata[i] ) {
+                    if( key == 'datapoints' ) continue;
+                    if( Esis.schema[key] !== undefined ) continue;
+                    
+                    if( !this._hasCustomAttr(key) ) {
+                        this.customAttributes.push({name: key});
+                        this.metadata[key] = metadata[i][key];
+                    }
+                }
+            }
+
+            this.$.titleLabel.innerHTML = Esis.files.get(this.currentIndex[0]).name.replace(/.*\//,'') + 
+                                            ' - Sheet #'+(this.currentIndex[1]+1) +
+                                            ' - Spectra #'+(this.currentIndex[2]+1);
 
             // do we already have an attribute panel show?  if so, let's update
             if( this.selected ) this.setSelected(this.selected);
 
             this.updateCounts();
+        },
+
+        _hasCustomAttr : function(attr) {
+            for( var i = 0; i < this.customAttributes.length; i++ ) {
+                if( this.customAttributes[i].name == attr ) return true;
+            }
+            return false;
         },
 
         onAttrSelect : function(e) {
@@ -213,7 +235,10 @@
 
         setSelected : function(attr) {
             this.selected = attr;
-            this.selectedValue = this.spectra[attr] || '';
+
+            this.selectedValue = '';
+            if( this.spectra[attr] !== undefined ) this.selectedValue = this.spectra[attr];
+            else if( this.metadata[attr] !== undefined ) this.selectedValue = this.metadata[attr];
 
             $(this).find('.attr-item').removeAttr('active');
             $(this).find('.list-group-item[value="'+attr+'"]').attr('active', '');
