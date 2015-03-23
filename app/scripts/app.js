@@ -92,14 +92,54 @@ Esis.updateJoinCount = function(fileIndex, sheetIndex, joinOnAttr) {
     $('#'+fileIndex+'-'+sheetIndex+'-joincount').text(count);
 }
 
+Esis.getAttributeCount = function(spectra) {
+    var t = {};
+
+    for( var key in spectra ) t[key] = 1;
+
+    var metadata = Esis.getJoinedMetadata(spectra);
+
+    for( var i = 0; i < metadata.length; i++ ) {
+        for( var key in metadata[i] ) t[key] = 1;
+    }
+
+    return Object.keys(t).length - 1;
+}
 
 Esis.getSpectraScore = function(spectra) {
     var s = 0, key;
+
+    var metadata = Esis.getJoinedMetadata(spectra);
+
     for( key in Esis.schema ) {
-        if( spectra[key] !== undefined && spectra[key] !== null && spectra[key] !== '' ) s++;
+        if( spectra[key] !== undefined && spectra[key] !== null && spectra[key] !== '' ) {
+            s++;
+            continue;
+        }
+        for( var i = 0; i < metadata.length; i++ ) {
+            if( metadata[i][key] !== undefined && metadata[i][key] !== null && metadata[i][key] !== '' ) {
+                s++;
+                continue;
+                break;
+            }
+        }
     }
     return s;
 }
+
+// update the spectra lists scores and counts
+// probably called after a join
+/*Esis.updateScoresAndCounts = function() {
+    var files = Esis.files.get();
+
+    for( var i = 0; i < files.length; i++ ) {
+        var file = files[i];
+        
+        for( var j = 0; j < file.sheets.length; j++ ) {
+            for( var i = 0)
+        }
+    }
+}*/
 
 Esis.app = (function(){
 

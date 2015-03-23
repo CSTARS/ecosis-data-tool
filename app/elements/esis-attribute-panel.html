@@ -75,11 +75,14 @@
                             </div>
                         </div>
 
-                        <a class="btn btn-link" on-click="back"><i class="fa fa-arrow-left"></i> Spectra List</a>
                     </div>
 
                     <div class="flex" style="overflow: auto">
                         <div style="padding: 10px">
+                            <div style="text-align: right">
+                                 <a class="btn btn-link" on-click="back"><i class="fa fa-arrow-left"></i> Spectra List</a>
+                            </div>
+
                             <esis-metadata-attribute 
                                 id="attrInput"
                                 hidden$="{{!showAttribute}}" 
@@ -252,10 +255,9 @@
             this.selectedValue = e.detail.value;
 
             this.updateCounts();
-            this.fire('spectra-updated',{
+            this.fire('spectra-updated', {
                 spectra : this.spectra,
-                fileIndex : this.fileIndex,
-                spectraIndex : this.spectraIndex
+                id : this.currentIndex
             })
         },
 

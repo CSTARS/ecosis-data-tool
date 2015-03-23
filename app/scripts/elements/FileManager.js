@@ -126,6 +126,8 @@ var FileManager = (function(){
 
         var sheet = Esis.files.updateSheetJoin(fileIndex, sheetIndex, e.currentTarget.value);
         Esis.updateJoinCounts();
+
+        this.fire('data-update', Esis.files);
         
         $('#'+fileIndex+'-'+sheetIndex+'-joincount').text(sheet.joinedCount);
     }

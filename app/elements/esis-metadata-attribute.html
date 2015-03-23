@@ -48,6 +48,9 @@
     Polymer({
         is : 'esis-metadata-attribute',
 
+        isMulti : function() {
+            this.querySelector('h2').style.display = 'none';
+        },
 
         update : function(attribute, value) {
             this.$.attrTitle.innerText = attribute;

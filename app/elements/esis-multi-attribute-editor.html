@@ -1,0 +1,96 @@
+<dom-module id="esis-multi-attribute-editor" >
+    <template>
+        <h4 id="title"></h4>
+        <div class="help-text" style="padding-bottom: 10px;">Edit multiple spectra at once</div>
+
+        <div style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+            Attribute: <select id="selector" on-change="onAttrChange"></select>
+        </div>
+
+        <div style="background-color: #485563; padding: 5px">
+            <esis-metadata-attribute 
+                id="attrInput"
+                on-value-change="onValueChange">
+            </esis-metadata-attribute>
+        </div>
+
+
+    </template>
+</dom-module>
+
+<script>
+    Polymer({
+        is : 'esis-multi-attribute-editor',
+
+        attached : function() {
+            this.$.attrInput.isMulti();
+        },
+
+        edit : function(idList) {
+            this.ids = idList;
+            this.$.title.innerText = 'Editing '+idList.length+' Spectra';
+
+
+            var files = Esis.files.get();
+            var t = {};
+            this.spectra = [];
+            for( var i = 0; i < this.ids.length; i++ ) {
+                var id = this.ids[i];
+                var sp = files[id[0]].sheets[id[1]].spectra[id[2]];
+
+                this.getAttributes(sp, t);
+                this.spectra.push(sp);
+            }
+
+
+            var html = '<optgroup label="Ecosis">';
+            for( var key in Esis.schema ) {
+                html += '<option value="'+key+'">'+key+'</option>';
+            }
+
+            html += '</optgroup><optgroup label="Custom">';
+            for( var key in t ) {
+                if( Esis.schema[key] ) continue;
+                html += '<option value="'+key+'">'+key+'</option>';
+            }
+
+            this.$.selector.innerHTML = html+'</optgroup>';
+
+            this.setSelected(Object.keys(Esis.schema)[0]);
+        },
+
+        getAttributes : function(spectra, t) {
+            for( var key in spectra ) t[key] = 1;
+
+            var metadata = Esis.getJoinedMetadata(spectra);
+
+            for( var i = 0; i < metadata.length; i++ ) {
+                for( var key in metadata[i] ) t[key] = 1;
+            }
+        },
+
+        onAttrChange : function(e) {
+            this.setSelected(e.currentTarget.value);
+        },
+
+        setSelected : function(attr) {
+            this.$.attrInput.update(attr, '');
+        },
+
+        onValueChange : function(e) {
+            for( var i = 0; i < this.spectra.length; i++ ) {
+                this.spectra[i][e.detail.attribute] = e.detail.value;
+            }
+
+            if( Esis.schema[e.detail.attribute] ) {
+                for( var i = 0; i < this.ids.length; i++ ) {
+                    var score = Esis.getSpectraScore(this.spectra[i]);
+                    var className = 'label '+Esis.getScoreClass(score);
+
+                    $('#sp-list-'+this.ids[i].join('-')+' .score')
+                        .html('<label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label>');
+                }
+            }
+        }
+    })
+</script>

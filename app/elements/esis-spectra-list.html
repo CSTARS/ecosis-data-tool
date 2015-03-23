@@ -20,6 +20,17 @@
 
         <div id="spectra">
             <h4 class="page-header">Spectra</h4>
+            <div>
+                <a class="btn btn-link" on-click="selectAll" style="display:none" id="selectAll">
+                    <i class="fa fa-check-square-o"></i> Select All
+                </a>
+                <a class="btn btn-link" on-click="unselectAll" style="display:none" id="unselectAll">
+                    <i class="fa fa-square-o"></i> Unselect All
+                </a>
+                <a id="editMultiple" style="display:none" class="btn btn-link" on-click="showEditMultiplePopup">
+                    <i class="fa fa-pencil"></i> Edit Selected
+                </a>
+            </div>
             <div id="tableRoot"></div>
         </div>
 
@@ -31,7 +42,7 @@
         is : 'esis-spectra-list',
 
         ready : function() {
-            this.popup = document.querySelector('esis-popup');
+            this.popup = document.querySelector('#file-manager-popup');
             this.popup.addEventListener('data-update', this.redrawTable.bind(this));
         },
 
@@ -45,7 +56,7 @@
             var table = '<table class="table table-striped">'+
                 '<tr><th></th><th>File</th><th>Spectra</th><th>Attribute Count</th><th>Score</th><th>Data Points</th><th></th></tr>';
 
-            var name, score, i, j, className;
+            var name, score, i, j, className, attrCount;
 
             for( i = 0; i < files.length; i++ ) {
                 name = files[i].name.replace(/.*\//,'');
@@ -58,10 +69,13 @@
                     for( z = 0; z < sheet.spectra.length; z++ ) {
                         score = Esis.getSpectraScore(sheet.spectra[j]);
                         className = 'label '+Esis.getScoreClass(score);
+                        attrCount = Esis.getAttributeCount(sheet.spectra[j]);
 
-                        table += '<tr id="sp-list-'+i+'-'+j+'-'+z+'"><td><input type="checkbox" /></td><td>'+name+'</td>'+
+                        table += '<tr id="sp-list-'+i+'-'+j+'-'+z+'"><td>'+
+                                 '<input type="checkbox" class="spectra-selector" spectra="'+i+'-'+j+'-'+z+'" /></td>'+
+                                 '<td>'+name+'</td>'+
                                  '<td>#'+z+'</td>'+
-                                 '<td>'+(Object.keys(sheet.spectra[j]).length - 1)+'</td>'+
+                                 '<td>'+attrCount+'</td>'+
                                  '<td class="score"><label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label></td>'+
                                  '<td>'+sheet.spectra[j].datapoints.length+'</td>'+
                                  '<td><i class="fa fa-edit" style-scope="esis-spectra-list" spid="'+i+'-'+j+'-'+z+'"></i></td></tr>';
@@ -71,8 +85,11 @@
 
             table = $(table);
             table.find('.fa-edit').on('click', this.showSpectra.bind(this));
+            table.find('input[type="checkbox"]').on('change', this.updateMultiSelect.bind(this));
 
             $(this.$.tableRoot).html('').append(table);
+
+            this.updateMultiSelect();
         },
 
         showSpectra : function(e) {
@@ -86,15 +103,47 @@
         },
 
         onSpectraUpdated : function(details) {
-            var fileIndex = details.fileIndex;
-            var spectraIndex = details.spectraIndex;
+            var id = details.id;
 
-            var ele = $('#sp-list-'+fileIndex+'-'+spectraIndex+' .score');
+            var ele = $('#sp-list-'+id[0]+'-'+id[1]+'-'+id[2]+' .score');
 
             var score = Esis.getSpectraScore(details.spectra);
             var className = 'label '+Esis.getScoreClass(score);
 
             ele.html('<label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label>');
+        },
+
+        updateMultiSelect : function() {
+            this.$.selectAll.style.display = 'inline-block';
+            this.$.unselectAll.style.display = 'inline-block';
+
+            var inputs = $(this.$.tableRoot).find('input[type="checkbox"]:checked');
+
+            this.selectedIds = [];
+            for( var i = 0; i < inputs.length; i++ ) {
+                this.selectedIds.push(Esis.parseId(inputs[i].getAttribute('spectra')));
+            }
+
+            if( this.selectedIds.length > 0 ) {
+                this.$.editMultiple.style.display = 'inline-block';
+            } else {
+                this.$.editMultiple.style.display = 'none';
+            }
+        },
+
+        selectAll : function() {
+            $(this.$.tableRoot).find('input[type="checkbox"]').prop('checked', true);
+            this.updateMultiSelect();
+        },
+
+        unselectAll : function() {
+            $(this.$.tableRoot).find('input[type="checkbox"]').prop('checked', false);
+            this.updateMultiSelect();
+        },
+
+        showEditMultiplePopup : function() {
+            document.querySelector('esis-multi-attribute-editor').edit(this.selectedIds);
+            document.querySelector('#multi-edit-popup').show();
         }
     })
 </script>

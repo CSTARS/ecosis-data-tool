@@ -29,6 +29,7 @@
   <link rel="import" href="elements/esis-selector.html" />
   <link rel="import" href="elements/esis-usda-input.html" />
   <link rel="import" href="elements/esis-controlled-input.html" />
+  <link rel="import" href="elements/esis-multi-attribute-editor.html" />
   <link rel="import" href="elements/esis-spectra-list.html" />
   <link rel="import" href="elements/esis-file-manager.html" />
   <link rel="import" href="elements/esis-metadata-attribute.html" />
@@ -53,8 +54,15 @@
 </head>
 <body fullbleed>
 
-  <esis-popup header="File Manager">
+  <esis-popup header="File Manager" id="file-manager-popup">
     <esis-file-manager class="popup-body"></esis-file-manager>
+    <div class="popup-footer">
+      <a class="btn btn-default" data-dismiss="modal">Close</a>
+    </div>
+  </esis-popup>
+
+  <esis-popup header="Multi Spectra Edit" id="multi-edit-popup">
+    <esis-multi-attribute-editor class="popup-body"></esis-multi-attribute-editor>
     <div class="popup-footer">
       <a class="btn btn-default" data-dismiss="modal">Close</a>
     </div>
