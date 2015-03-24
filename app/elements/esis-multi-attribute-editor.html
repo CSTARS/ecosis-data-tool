@@ -1,10 +1,10 @@
 <dom-module id="esis-multi-attribute-editor" >
     <template>
         <h4 id="title"></h4>
-        <div class="help-text" style="padding-bottom: 10px;">Edit multiple spectra at once</div>
+        <div class="help-text" style="padding-bottom: 10px; color: #888; font-size: 12px">Edit multiple spectra at once. You can quickly navigate througth the Attribute List by using the <i class="fa fa-arrow-left"></i> left and <i class="fa fa-arrow-right"></i> right arrow keys.</div>
 
         <div style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">
-            Attribute: <select id="selector" on-change="onAttrChange"></select>
+            Attribute: <select id="selector" on-change="onAttrChange" class="form-control"></select>
         </div>
 
         <div style="background-color: #485563; padding: 5px">
@@ -12,9 +12,9 @@
                 id="attrInput"
                 on-value-change="onValueChange">
             </esis-metadata-attribute>
+
+            <div class="label label-success" id="updateLabel" style="display:none">Updated!</div>
         </div>
-
-
     </template>
 </dom-module>
 
@@ -24,7 +24,33 @@
 
         attached : function() {
             this.$.attrInput.isMulti();
+
+            $(window).on('keyup', function(e){
+                if( !this.editing ) return;
+
+                if( e.which == 37 ) this.prev();
+                else if ( e.which == 39 ) this.next();                
+            }.bind(this));
         },
+
+        prev : function() {
+            var keys = Object.keys(Esis.schemaAll);
+            var index = keys.indexOf(this.selected);
+            if( index == 0 ) return;
+
+            $(this.$.selector).val(keys[index - 1])
+            this.setSelected(keys[index - 1]);
+        },
+
+        next : function() {
+            var keys = Object.keys(Esis.schemaAll);
+            var index = keys.indexOf(this.selected);
+            if( index == keys.length - 1 ) return;
+
+            $(this.$.selector).val(keys[index + 1])
+            this.setSelected(keys[index + 1]);
+        },
+
 
         edit : function(idList) {
             this.ids = idList;
@@ -43,20 +69,33 @@
             }
 
 
-            var html = '<optgroup label="Ecosis">';
+            var html = '';
             for( var key in Esis.schema ) {
-                html += '<option value="'+key+'">'+key+'</option>';
+                html += '<optgroup label="'+key+'">';
+                    for( var i = 0; i < Esis.schema[key].length; i++ ) {
+                        var item = Esis.schema[key][i];
+                        html += '<option value="'+item.name+'">'+
+                                (item.level == 1 ? '* ' : '' )+
+                                item.name+'</option>';
+                    }
+                html += '</optgroup>';
             }
 
-            html += '</optgroup><optgroup label="Custom">';
+            html += '<optgroup label="Custom">';
+
             for( var key in t ) {
-                if( Esis.schema[key] ) continue;
+                if( Esis.schemaAll[key] ) continue;
                 html += '<option value="'+key+'">'+key+'</option>';
             }
 
             this.$.selector.innerHTML = html+'</optgroup>';
 
-            this.setSelected(Object.keys(Esis.schema)[0]);
+            this.setSelected(Object.keys(Esis.schemaAll)[0]);
+            this.editing = true;
+        },
+
+        doneEditing : function() {
+            this.editing = false;
         },
 
         getAttributes : function(spectra, t) {
@@ -74,6 +113,7 @@
         },
 
         setSelected : function(attr) {
+            this.selected = attr;
             this.$.attrInput.update(attr, '');
         },
 
@@ -82,7 +122,7 @@
                 this.spectra[i][e.detail.attribute] = e.detail.value;
             }
 
-            if( Esis.schema[e.detail.attribute] ) {
+            if( Esis.schemaAll[e.detail.attribute] ) {
                 for( var i = 0; i < this.ids.length; i++ ) {
                     var score = Esis.getSpectraScore(this.spectra[i]);
                     var className = 'label '+Esis.getScoreClass(score);
@@ -91,6 +131,11 @@
                         .html('<label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label>');
                 }
             }
+
+            this.$.updateLabel.style.display = 'inline-block';
+            setTimeout(function(){
+                this.$.updateLabel.style.display = 'none';
+            }.bind(this), 2000);
         }
     })
 </script>

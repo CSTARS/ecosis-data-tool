@@ -7,7 +7,27 @@ gui.App.setCrashDumpDir('/Users/jrmerz/dev/cstars/EcoSIS/ecosis-data-tool/');
 var Esis = {};
 
 Esis.schema = require('./schema.json');
-Esis.schemaTotal = Object.keys(Esis.schema).length;
+
+// process schema into easy to use data structures
+Esis.level1 = {};
+Esis.level2 = {};
+Esis.schemaAll = {};
+Esis.schemaTotal = 0;
+
+for( var key in Esis.schema ) {
+    for( var i = 0; i < Esis.schema[key].length; i++ ) {
+        Esis.schema[key][i].category = key;
+
+        if( Esis.schema[key][i].level == 1 ) {
+            Esis.schemaTotal++;
+            Esis.level1[Esis.schema[key][i].name] = Esis.schema[key][i];
+        } else {
+            Esis.level2[Esis.schema[key][i].name] = Esis.schema[key][i];
+        }
+
+        Esis.schemaAll[Esis.schema[key][i].name] = Esis.schema[key][i];
+    }
+}
 
 Esis.showSpectraList = function() {
     $('#list').show();
@@ -18,7 +38,7 @@ Esis.getScoreClass = function(score) {
     var percent = score / Esis.schemaTotal;
 
     if( percent < .25 ) return 'label-danger';
-    else if( percent < 1 ) return 'label-warning';
+    else if( percent < .9 ) return 'label-warning';
     return 'label-success';
 }
 
@@ -111,7 +131,7 @@ Esis.getSpectraScore = function(spectra) {
 
     var metadata = Esis.getJoinedMetadata(spectra);
 
-    for( key in Esis.schema ) {
+    for( key in Esis.level1 ) {
         if( spectra[key] !== undefined && spectra[key] !== null && spectra[key] !== '' ) {
             s++;
             continue;
@@ -165,6 +185,6 @@ Esis.app = (function(){
     function updateSpectraTable(e) {
         document.querySelector('#list').onSpectraUpdated(e.detail);
     }
-
+    
     return {}
 })();

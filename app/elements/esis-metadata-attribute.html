@@ -51,7 +51,6 @@
         },
 
         update : function(attribute, value) {
-            this.$.attrTitle.innerText = attribute;
             this.attribute = attribute;
 
             this.value = value;
@@ -59,16 +58,22 @@
 
             if( !this.attribute ) return;
 
-            if( Esis.schema[this.attribute] ) {
-                this.$.attrDescription.innerText = Esis.schema[this.attribute].description;
+            if( Esis.schemaAll[this.attribute] ) {
+                var item = Esis.schemaAll[this.attribute];
+                
+                if( item.level == 1) this.$.attrTitle.innerHTML = '<i class="fa fa-star" style="color:yellow"></i> '+attribute;
+                else this.$.attrTitle.innerText = attribute;
 
+                this.$.attrDescription.innerText = item.description || '';
 
-                this.values = Esis.schema[this.attribute].values;
-                this.type = Esis.schema[this.attribute].type;
+                this.level = item.level;
+                this.input = item.input;
+                this.values = item.vocabulary;
+                this.type = 'ecosis';
 
                 this.createInput();
             } else {
-                
+                this.$.attrTitle.innerText = attribute;
                 this.$.attrDescription.innerText = 'Custom attribute for this dataset';
                 this.values = null;
                 this.type = 'custom';
@@ -80,7 +85,7 @@
         createInput : function() {
             this.$.inputRoot.innerHTML = '';
 
-            if( this.values ) {
+            if( this.input == 'controlled' ) {
                 var t = this.$.controlledVocab.stamp({
                     value : this.value,
                     attribute : this.attribute
@@ -91,6 +96,8 @@
                 this.$.inputRoot
                     .querySelector('esis-controlled-input')
                     .addEventListener('change', this.onValueChange.bind(this));
+
+                this.$.inputRoot.querySelector('select').focus();
 
             } else if ( this.attribute == 'USDA Code' ) {
                 var t = this.$.usda.stamp({
@@ -104,14 +111,23 @@
                     .querySelector('esis-usda-input')
                     .addEventListener('usda-value-change', this.usdaValueChange.bind(this));
 
-            } else if ( this.type == 'custom' ) {
+            } else {
                 var t = this.$.customAttribute.stamp();
                 this.$.inputRoot.appendChild(t.root);
+
+                if( this.input == 'date' ) $(this.$.inputRoot).find('input').attr('type', 'date');
 
                 $(this.$.inputRoot).find('.btn').on('click', function(){
                     this.setValueChange($(this.$.inputRoot).find('input').val());
                     $(this.$.inputRoot).find('input').val('');
                 }.bind(this));
+
+                $(this.$.inputRoot).find('input').on('keypress', function(e){
+                    if( e.which != 13 ) return;
+
+                    this.setValueChange($(this.$.inputRoot).find('input').val());
+                    $(this.$.inputRoot).find('input').val('');
+                }.bind(this)).focus();
             }
         },
 

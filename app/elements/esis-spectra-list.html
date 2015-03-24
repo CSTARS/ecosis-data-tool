@@ -44,6 +44,11 @@
         ready : function() {
             this.popup = document.querySelector('#file-manager-popup');
             this.popup.addEventListener('data-update', this.redrawTable.bind(this));
+
+            $('#multi-edit-popup').on('hidden.bs.modal', function(e) {
+                $('esis-multi-attribute-editor')[0].doneEditing();
+            });
+
         },
 
         openFileManager : function() {

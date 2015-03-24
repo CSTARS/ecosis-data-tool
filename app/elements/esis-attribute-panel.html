@@ -43,23 +43,12 @@
             <div class="flex" style="position: relative">
                 <div class="layout horizontal fit">
 
-                    <div style="height: 100%; overflow: auto; min-width: 250px; border-right: 1px solid #4e5d6c">
+                    <div style="height: 100%; overflow: auto; width: 250px; border-right: 1px solid #4e5d6c">
                         <h4 style="margin-bottom: 20px; text-align: center">Attributes</h4>
 
                         <div class="panel panel-success">
                             <div class="panel-heading">EcoSIS <span id="attrCounts" class="pull-right label label-danger">0/0</span></div>
-                            <div class="panel-body">
-                                <div class="list-group">
-                                    <template is="x-repeat" items="{{ecosisAttributes}}">
-                                        <a class="list-group-item attr-item ecosis-item" 
-                                            on-click="onAttrSelect" 
-                                            value$="{{item.name}}">
-                                            <span>{{item.name}}</span>
-                                            <span class="has-value"><i class="fa fa-check"></i></span>
-                                        </a>
-                                    </template>
-                                </div>
-                            </div>
+                            <div class="panel-body" id="ecosisAttrPanel"></div>
                         </div>
 
                          <div class="panel panel-info">
@@ -103,14 +92,6 @@
     Polymer({
         is : 'esis-attribute-panel',
 
-        properties : {
-            attributeList : {
-                type : Object,
-                value : function() {
-                    return []
-                }
-            }
-        },
 
         ready : function() {
             this.selected = '';
@@ -126,9 +107,6 @@
         },
 
         attached : function() {
-            for( var key in Esis.schema ) {
-                this.attributeList.push(key);
-            }
             this.updateSelector();
         },
 
@@ -274,21 +252,36 @@
                 }
             }
 
-            this.$.attrCounts.innerHTML = count + '/' + items.length;
+            this.$.attrCounts.innerHTML = count + '/' + Esis.schemaTotal;
             
             var className = 'pull-right label '+Esis.getScoreClass(count);
             this.$.attrCounts.className = className;
         },
 
-        updateSelector : function() {
-            if( !this.attributeList ) return;
+        updateSelector : function() {            
+            var html = '';
+            for( var key in Esis.schema ) {
+                html += '<h4>'+key+'</h4><div class="list-group">';
 
-            this.ecosisAttributes = [];
-            for( var i = 0; i < this.attributeList.length; i++ ) {
-                this.ecosisAttributes.push({
-                    name : this.attributeList[i]
-                })
+                for( var i = 0; i < Esis.schema[key].length; i++ ) {
+                    var item = Esis.schema[key][i];
+
+                    html += '<a class="list-group-item attr-item ecosis-item" style-scope="esis-attribute-panel" value="'+item.name+'" style="cursor:pointer">'+
+                                (item.level == 1 ? '<i style="color:yellow" class="fa fa-star"></i> ' : '')+
+                                '<span>'+item.name+'</span><span class="has-value" style-scope="esis-attribute-panel"><i class="fa fa-check"></i></span>'+
+                            '</a>';
+                }
+
+                html += '</div>';
             }
+
+            this.$.ecosisAttrPanel.innerHTML = html;
+
+            $(this.$.ecosisAttrPanel)
+                .find('.ecosis-item')
+                .on('click', function(e){
+                    this.onAttrSelect(e.originalEvent);
+                }.bind(this));
 
             setTimeout(this.updateCounts.bind(this), 50);
         },

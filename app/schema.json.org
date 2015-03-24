@@ -1,0 +1,65 @@
+{
+  "Form": {
+    "values": [
+      "Deciduous Trees",
+      "Deciduous Shrubs",
+      "Grasses/Sedge/Rush",
+      "Wildflowers (Forbs)",
+      "Broadleaf Evergreen Trees",
+      "Broadleaf Evergreen Shrubs",
+      "Cactus",
+      "Evergreen Conifers (Excluding Pine)",
+      "Pine",
+      "Deciduous Conifer"
+    ],
+    "description": "General form of vegetation target"
+  },
+  "Measurement Scale": {
+    "values": [
+      "Leaf",
+      "Needles",
+      "Grass",
+      "Flower",
+      "Herb",
+      "Fruit/Cone",
+      "Shrub",
+      "Pad",
+      "Twig",
+      "Branch",
+      "Trunk",
+      "Canopy"
+    ],
+    "description": "Scale of measurement taken from vegetation target"
+  },
+  "USDA Code": {
+    "type": "query",
+    "description": "4/5 digit symbol for sample"
+  },
+  "Measurement Type": {
+    "values": [
+      "Lab",
+      "Field - Sample",
+      "Field - Transect",
+      "Remote - Airborne",
+      "Remote - Spaceborne"
+    ],
+    "description": "Where were the data collected"
+  },
+  "Acquisition Conditions": {
+    "values": [
+      "Clear Sky",
+      "Partially Cloudy",
+      "Full Clouds",
+      "Hazy",
+      "Clear Sky/Complete Canopy (shaded)",
+      "Clear Sky/Partial Canopy (partially shaded)",
+      "Partially Cloudy/Complete Canopy Cover",
+      "Partially Cloudy/Partial Canopy Cover",
+      "Full Clouds/Complete Canopy Cover",
+      "Full Clouds/Partial Canopy Cover",
+      "Under Man-made Shelter (no precip)",
+      "Under Man-made Shelter (precip)"
+    ],
+    "description": "General description of conditions during data acquisition; add additional observations in Notes field"
+  }
+}
