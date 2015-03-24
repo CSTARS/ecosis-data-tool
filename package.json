@@ -41,7 +41,7 @@
     "load-grunt-tasks": "^0.6.0",
     "time-grunt": "^0.4.0",
     "concat-files": "~0.1.0",
-    "grunt-node-webkit-builder": "^1.0.0",
+    "grunt-node-webkit-builder": "^1.0.2",
     "grunt-vulcanize": "^0.6.1",
     "grunt-shell": "^1.1.1",
     "grunt-usemin": "^3.0.0",

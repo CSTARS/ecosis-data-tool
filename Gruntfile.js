@@ -27,8 +27,8 @@ module.exports = function (grunt) {
       //config: config,
       nodewebkit: {
         options: {
-            version : 'v0.11.5',
-            platforms: ['win','osx'],
+            version : 'v0.12.0',
+            platforms: ['win','osx','linux'],
             buildDir: './webkitbuilds', // Where the build version of my node-webkit app is saved
         },
         src: ['./dist/**/*'] // Your node-webkit app
@@ -139,16 +139,17 @@ module.exports = function (grunt) {
                     cwd: '<%= yeoman.app %>',
                     dest: '<%= yeoman.dist %>',
                     src: [
-                        '*.{ico,png,txt}',
-                        '.htaccess',
-                        'images/{,*/}*.webp',
+                        'scripts/{,*/}*.*',
                         'index.html',
                         'package.json',
-                        'styles/fonts/{,*/}*.*',
-                        'styles/*.css',
-                        'scripts/*.js',
-                        'fonts/{,*/}*.*'
+                        'schema.json',
                     ]
+                },{
+                    expand: true,
+                    dot: true,
+                    cwd: 'bower_components/font-awesome/',
+                    dest: '<%= yeoman.dist %>',
+                    src: ['fonts/{,*/}*.*']
                 }]
             },
             styles: {
@@ -267,7 +268,6 @@ module.exports = function (grunt) {
     'uglify:generated',
     'usemin',
     'vulcanize',
-    //'shell:clear-bower-components'
     'nodewebkit'
   ]);
 

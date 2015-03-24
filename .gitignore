@@ -1,4 +1,8 @@
+.tmp
 .DS_Store
 polymer
 bower_components
 node_modules
+webkitbuilds
+cache
+dist
