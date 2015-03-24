@@ -20,8 +20,7 @@
         <template id="controlledVocab" is="x-template">
             <esis-controlled-input 
                 value="{{value}}" 
-                attribute="{{attribute}}"
-                on-change="onValueChange">
+                attribute="{{attribute}}">
             </esis-controlled-input>
         </template>
 
@@ -36,8 +35,7 @@
 
         <template id="usda" is="x-template">
             <esis-usda-input 
-                value="{{value}}"
-                on-usda-value-change="usdaValueChange">
+                value="{{value}}">
             </esis-usda-input>
         </template>
 
@@ -89,12 +87,23 @@
                 });
                 this.$.inputRoot.appendChild(t.root);
 
+                // hacks for fubar x-template
+                this.$.inputRoot
+                    .querySelector('esis-controlled-input')
+                    .addEventListener('change', this.onValueChange.bind(this));
+
             } else if ( this.attribute == 'USDA Code' ) {
                 var t = this.$.usda.stamp({
                     value : this.value,
                     attribute : this.attribute
                 });
                 this.$.inputRoot.appendChild(t.root);
+
+                // hacks for fubar x-template
+                this.$.inputRoot
+                    .querySelector('esis-usda-input')
+                    .addEventListener('usda-value-change', this.usdaValueChange.bind(this));
+
             } else if ( this.type == 'custom' ) {
                 var t = this.$.customAttribute.stamp();
                 this.$.inputRoot.appendChild(t.root);
