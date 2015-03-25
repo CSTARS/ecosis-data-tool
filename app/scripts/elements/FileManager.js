@@ -9,21 +9,36 @@ var FileManager = (function(){
         setTimeout(function(){
             console.log('running importer on: '+file);
             importer.run(file, function(err, resp, parser){
-                this.onFileImported(err, resp, file, parser);
+                if( parser == 'zip' ) {
+                    this.onZipFileImported(err, resp, parser);
+                } else {
+                    this.onFileImported(err, resp, file, parser);
+                }
+                
                 if( callback ) callback();
             }.bind(this));
         }.bind(this), 100);
     }
 
-    function onFileImported(err, resp, name, parser) {
+    function onZipFileImported(err, zipResp, parser) {
+        for( var i = 0; i < zipResp.files.length; i++ ) {
+            if( zipResp.files[i].error ) continue;
+            var f = zipResp.files[i];
+
+            this.onFileImported(err, f.tables, f.name.replace(/.*\//, ''), f.parser, zipResp.defaultConfig);
+        }
+    }
+
+    function onFileImported(err, resp, name, parser, defaultConfig) {
         this.setImporting(false);
 
         if( err ) {
-            this.currentFile.error = err;
             return console.log(err);
         }
 
         this.currentFileIndex = Esis.files.add(name, parser);
+
+        var updateJoins = [];
 
         if( parser == 'spectra' ) {
 
@@ -34,12 +49,32 @@ var FileManager = (function(){
 
             for( var i = 0; i < resp.length; i++ ) {
 
-                var sheetIndex = Esis.files.addSheet(this.currentFileIndex, 'data', 'row', resp[i]);
+                var type = 'data';
+                var orientation = 'row';
+                var join = '';
 
-                var parsedTable = tableParser.run(resp[i], 'row');
-                Esis.files.setSheetSpectra(this.currentFileIndex, sheetIndex, parsedTable.spectra);
+                if( defaultConfig && defaultConfig[name] ) {
+                    orientation = defaultConfig[name].orientation;
+                    type = defaultConfig[name].type;
+                    join = defaultConfig[name].join;
+                }
+
+                var sheetIndex = Esis.files.addSheet(this.currentFileIndex, type, orientation, resp[i]);
+                var parsedTable = tableParser.run(resp[i], orientation);
+
+                if( type == 'data' ) {
+                    Esis.files.setSheetSpectra(this.currentFileIndex, sheetIndex, parsedTable.spectra);
+                } else if ( type == 'metadata' ) {
+                    Esis.files.setSheetMetadata(this.currentFileIndex, sheetIndex, parsedTable.spectra);
+                    updateJoins.push([sheetIndex, join]);
+                }
+
                 Esis.files.setSheetAttributes(this.currentFileIndex, sheetIndex, parsedTable.attributes);
             }
+        }
+
+        for( var i = 0; i < updateJoins.length; i++ ) {
+            Esis.files.updateSheetJoin(this.currentFileIndex, updateJoins[i][0], updateJoins[i][1]); 
         }
 
         this.redrawFiles();
@@ -88,19 +123,8 @@ var FileManager = (function(){
 
             if( type == 'metadata' ) {
         
+                this.createMetadataSelector(fileIndex, sheetIndex);
 
-                var selector = this.createJoinSelector(fileIndex, sheetIndex, sheet.attributes, '');
-
-                ele.parent().append(
-                    $('<div style="margin-top: 10px" id="'+fileIndex+'-'+sheetIndex+'-fm-metadata-info">'+
-                        '<div> Joined to: <span id="'+fileIndex+'-'+sheetIndex+'-joincount">0</span></div>' +
-                        '<div> Join On: '+selector+'</div>' +
-                      '</div>'
-                     )
-                );
-                ele.parent().find('.join-selector').on('change', this.onChangeJoin.bind(this));
-
-                $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.attributes.length);
             } else {
 
                 // remove selector
@@ -116,6 +140,23 @@ var FileManager = (function(){
             this.setImporting(false);
             this.fire('data-update', Esis.files);
         }.bind(this), 100);
+    }
+
+    function createMetadataSelector(fileIndex, sheetIndex) {
+        var sheet = Esis.files.get(fileIndex).sheets[sheetIndex];
+        var selector = this.createJoinSelector(fileIndex, sheetIndex, sheet.attributes, sheet.join || '');
+        var ele = $('#'+fileIndex+'-'+sheetIndex+'-format-selector');
+
+        ele.append(
+            $('<div style="margin-top: 10px" id="'+fileIndex+'-'+sheetIndex+'-fm-metadata-info">'+
+                '<div> Joined to: <span id="'+fileIndex+'-'+sheetIndex+'-joincount">'+(sheet.joinedCount || 0)+'</span></div>' +
+                '<div> Join On: '+selector+'</div>' +
+              '</div>'
+             )
+        );
+        ele.find('.join-selector').on('change', this.onChangeJoin.bind(this));
+
+        $('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.attributes.length);
     }
 
     function onChangeJoin(e) {
@@ -148,11 +189,13 @@ var FileManager = (function(){
 
     return {
         select : select,
+        onZipFileImported : onZipFileImported,
         onFileImported : onFileImported,
         changeOrientation : changeOrientation,
         removeSpectra : removeSpectra,
         changeType : changeType,
-        onChangeJoin : onChangeJoin
+        onChangeJoin : onChangeJoin,
+        createMetadataSelector : createMetadataSelector
     }
 
 })();

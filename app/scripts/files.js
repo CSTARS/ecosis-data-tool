@@ -27,6 +27,13 @@ Esis.files = (function(){
         delete files[fileIndex].sheets[sheetIndex].metadata;
     }
 
+    function setSheetMetadata(fileIndex, sheetIndex, metadata) {
+        files[fileIndex].sheets[sheetIndex].metadata = metadata;
+        _setSchema(files[fileIndex].sheets[sheetIndex]);
+
+        delete files[fileIndex].sheets[sheetIndex].spectra;
+    }
+
     function updateSheetOrientation(fileIndex, sheetIndex, orientation, spectra, attributes) {
         files[fileIndex].sheets[sheetIndex].orientation = orientation;
         setSheetAttributes(fileIndex, sheetIndex, attributes);
@@ -80,13 +87,15 @@ Esis.files = (function(){
         var data = {};
         var c = 0, sp;
 
-        for( var i = 0; i < sheet.spectra.length; i++ ) {   
+        var items = sheet.spectra ? sheet.spectra : sheet.metadata;
 
-            for( var key in sheet.spectra[i] ) {
+        for( var i = 0; i < items.length; i++ ) {   
+
+            for( var key in items[i] ) {
 
                 if( key == 'datapoints' ) {
-                    for( var j = 0; j < sheet.spectra[i].datapoints.length; j++ ) {
-                        if( !data[sheet.spectra[i].datapoints[j].key] ) data[sheet.spectra[i].datapoints[j].key] = 1;
+                    for( var j = 0; j < items[i].datapoints.length; j++ ) {
+                        if( !data[items[i].datapoints[j].key] ) data[items[i].datapoints[j].key] = 1;
                     }
                     continue;
                 }
@@ -125,6 +134,7 @@ Esis.files = (function(){
         updateSheetOrientation : updateSheetOrientation,
         setSheetAttributes : setSheetAttributes,
         setSheetSpectra : setSheetSpectra,
+        setSheetMetadata : setSheetMetadata,
         updateSheetJoin : updateSheetJoin,
         addSheet : addSheet,
         getSheet : getSheet

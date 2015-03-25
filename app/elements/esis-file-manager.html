@@ -98,6 +98,7 @@
             var panel = '';
 
             var files = Esis.files.get();
+            var metadata = [];
 
             for( var i = 0; i < files.length; i++ ) {
                 var file = files[i];
@@ -107,11 +108,13 @@
 
                 for( var j = 0; j < file.sheets.length; j++ ) {
                     panel += '<tr><td>'+j+'</td>'+
-                            '<td>'+ (file.parser == 'spectra' ? 'N/A' : this.createFormatSelector(i, j, file.sheets[j].type))+'</td>'+
+                            '<td id="'+i+'-'+j+'-format-selector">'+ (file.parser == 'spectra' ? 'N/A' : this.createFormatSelector(i, j, file.sheets[j].type))+'</td>'+
                             '<td>'+ (file.parser == 'spectra' ? 'N/A' : this.createOrientationSelector(i, j, file.sheets[j].orientation))+'</td>'+
                             '<td class="'+i+'-'+j+'-scount">'+(file.sheets[j].spectra ? file.sheets[j].spectra.length : 0)+'</td>'+
                             '<td class="'+i+'-'+j+'-mcount">'+file.sheets[j].schema.metadata.length+'</td>'+
                             '<td><a class="btn btn-link btn-info" style="margin:0" sheet="'+i+'-'+j+'"><i class="fa fa-info"></i></td></tr>';
+
+                    if( file.sheets[j].type == 'metadata' ) metadata.push([i, j]);
                 }
                 panel += '</table></div>'
             }
@@ -122,6 +125,11 @@
             $(this).find('.type-selector').on('change', this.changeType.bind(this));
 
             $(this).find('.btn-info').on('click', this.showInfo.bind(this));
+
+            // create the metadata selectors
+            for( var i = 0; i < metadata.length; i++ ) {
+                this.createMetadataSelector(metadata[i][0], metadata[i][1]);
+            }
         },
 
         setImporting : function(importing) {

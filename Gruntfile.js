@@ -167,7 +167,7 @@ module.exports = function (grunt) {
                         'csv-stringify/**/*',
                         'fast-csv/**/*',
                         'md5/**/*',
-                        'readable-stream/**/*',
+                        'adm-zip/**/*',
                         'jszip/**/*',
                         'node-uuid/**/*',
                         'request/**/*',
