@@ -147,21 +147,32 @@ Esis.getSpectraScore = function(spectra) {
     return s;
 }
 
-// update the spectra lists scores and counts
-// probably called after a join
-/*Esis.updateScoresAndCounts = function() {
-    var files = Esis.files.get();
-
-    for( var i = 0; i < files.length; i++ ) {
-        var file = files[i];
-        
-        for( var j = 0; j < file.sheets.length; j++ ) {
-            for( var i = 0)
-        }
-    }
-}*/
 
 Esis.app = (function(){
+
+    var gui = require('nw.gui');
+
+    $(window).on('keypress', function(e){
+        if( e.ctrlKey && e.which == 18 ) { // ctrl + r
+            window.location.reload();
+        } else if ( e.ctrlKey && e.which == 9 ) { // ctrl + i
+            gui.Window.get().showDevTools();
+        }
+    });
+
+    /* 
+        OSX Copy & Paste Fix: 
+        https://github.com/nwjs/nw.js/issues/1955
+        https://github.com/nwjs/nw.js/issues/2039
+    */
+    var win = gui.Window.get();
+    var nativeMenuBar = new gui.Menu({ type: "menubar" });
+    try {
+        nativeMenuBar.createMacBuiltin("EcoSIS Data Tool");
+        win.menu = nativeMenuBar;
+    } catch (ex) {
+        console.log(ex.message);
+    }
 
     window.onload = function() {
        $('#list')

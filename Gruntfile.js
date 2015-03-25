@@ -9,6 +9,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-node-webkit-builder');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-vulcanize');
+  grunt.loadNpmTasks('grunt-contrib-compress');
 
   // configurable paths
   /*var config = {
@@ -33,6 +34,7 @@ module.exports = function (grunt) {
         },
         src: ['./dist/**/*'] // Your node-webkit app
       },
+
     // Project settings
         yeoman: {
             // Configurable paths
@@ -140,6 +142,7 @@ module.exports = function (grunt) {
                     dest: '<%= yeoman.dist %>',
                     src: [
                         'scripts/{,*/}*.*',
+                        'lib/{,*/}*.*',
                         'index.html',
                         'package.json',
                         'schema.json',
@@ -150,6 +153,28 @@ module.exports = function (grunt) {
                     cwd: 'bower_components/font-awesome/',
                     dest: '<%= yeoman.dist %>',
                     src: ['fonts/{,*/}*.*']
+                },
+                {
+                    expand: true,
+                    dot: true,
+                    cwd: 'node_modules',
+                    dest: '<%= yeoman.dist %>/node_modules',
+                    src: [
+                        'archiver/**/*',
+                        'async/**/*',
+                        'csv/**/*',
+                        'csv-parse/**/*',
+                        'csv-stringify/**/*',
+                        'fast-csv/**/*',
+                        'md5/**/*',
+                        'readable-stream/**/*',
+                        'jszip/**/*',
+                        'node-uuid/**/*',
+                        'request/**/*',
+                        'rimraf/**/*',
+                        'xlsjs/**/*',
+                        'xlsx/**/*'
+                    ]
                 }]
             },
             styles: {
@@ -203,6 +228,30 @@ module.exports = function (grunt) {
                          'rm -rf <%= yeoman.dist %>/components && '+
                          'rm -rf <%= yeoman.dist %>/elements'
 
+            },
+            zipWin : {
+                options: {
+                    stdout: true,
+                    stderr: true
+                },
+                command: 'cd webkitbuilds/EcoSISDataTool/win64 && zip -q -r ../win64.zip ./* && '+
+                         'cd ../win32 && zip -q -r ../win32.zip ./*'
+            },
+            zipOSX : {
+                options: {
+                    stdout: true,
+                    stderr: true
+                },
+                command: 'cd webkitbuilds/EcoSISDataTool/osx64 && zip -q -r ../osx64.zip ./* && '+
+                         'cd ../osx32 && zip -q -r ../osx32.zip ./*'
+            },
+            zipLinux : {
+                options: {
+                    stdout: true,
+                    stderr: true
+                },
+                command: 'cd webkitbuilds/EcoSISDataTool/linux64 && zip -q -r ../linux64.zip ./* && '+
+                         'cd ../linux32 && zip -q -r ../linux32.zip ./*'
             },
 
             run : {
@@ -271,6 +320,11 @@ module.exports = function (grunt) {
     'nodewebkit'
   ]);
 
+  grunt.registerTask('zip',[
+    'shell:zipWin',
+    'shell:zipOSX',
+    'shell:zipLinux'
+  ]);
  
 
 };
