@@ -106,12 +106,40 @@ Esis.files = (function(){
         }
 
         sheet.schema = {
-            metadata : [],
-            data : []
+            metadata : {},
+            data : {}
         };
 
-        for( var key in attributes ) sheet.schema.metadata.push(key);
-        for( var key in data ) sheet.schema.data.push(key);
+        for( var key in attributes ) processAttrName(key, 'metadata', sheet.schema);
+        for( var key in data ) processAttrName(key, 'data', sheet.schema);
+    }
+
+    function processAttrName(key, type, schema) {
+        var original = key;
+        var parts = key.split(' ');
+
+        parts[0] = parts[0].trim();
+        if( parts[0].match(/.*__d$/) ) {
+            parts[0] = parts[0].replace(/__d$/, '');
+            type = 'data';
+        }
+
+        key = parts[0];
+        schema[type][key] = {
+            original : original
+        }
+
+        if( parts.length > 1 ) {
+            parts.splice(0, 1);
+            parts = parts.join(' ').trim();
+            if( parts.match(/.*\(.*\).*/) ) {
+                parts = parts.split('(');
+                parts.splice(0, 1);
+                parts = parts.join('(').split(')');
+                parts.splice(parts.length-1, 1);
+                schema[type][key].units = parts.join(')');
+            }
+        }
     }
 
     function setSheetAttributes(fileIndex, sheetIndex, attributes) {

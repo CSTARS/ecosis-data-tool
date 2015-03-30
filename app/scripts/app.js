@@ -147,6 +147,43 @@ Esis.getSpectraScore = function(spectra) {
     return s;
 }
 
+Esis.getJoinedSchema = function() {
+    // TODO: add global schema of user edits
+    var files = Esis.files.get();
+
+    var schema = {}
+
+    for( var i = 0; i < files.length; i++ ) {
+        var file = files[i];
+        
+        for( var j = 0; j < file.sheets.length; j++ ) {
+            var ss = file.sheets[j].schema;
+            
+            for( var key in ss.metadata ) {
+                Esis.addSchemaKey(schema, 'metadata', key, ss.metadata[key]);
+            }
+
+            for( var key in ss.data ) {
+                Esis.addSchemaKey(schema, 'data', key, ss.data[key]);
+            }
+        }
+    }
+
+    return schema;
+}
+
+Esis.addSchemaKey = function(schema, type, key, value) {
+    value.type = type;
+
+    if( !schema[key] ) {
+        schema[key] = value;
+    } else if( Object.keys(value).length > Object.keys(schema[key]).length) {
+        schema[key] = value;
+    } else if( type == 'data' && schema[key].type == 'metadata' ) {
+        schema[key] = value;
+    }
+}
+
 
 Esis.app = (function(){
 

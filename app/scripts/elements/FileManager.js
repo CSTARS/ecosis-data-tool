@@ -99,7 +99,7 @@ var FileManager = (function(){
 
             // TODO: no DOM stuff here...
             $(this).find('.'+fileIndex+'-'+sheetIndex+'-scount').html(sheet.spectra ? sheet.spectra.length : 0);
-            $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.schema.metadata.length);
+            $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(Object.keys(sheet.schema.metadata).length);
 
             this.setImporting(false);
             this.fire('data-update', Esis.files);
@@ -131,7 +131,7 @@ var FileManager = (function(){
                 $('#'+fileIndex+'-'+sheetIndex+'-fm-metadata-info').remove();
 
                 
-                $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(sheet.schema.metadata.length);
+                $(this).find('.'+fileIndex+'-'+sheetIndex+'-mcount').html(Object.keys(sheet.schema.metadata).length);
             }
 
             // TODO: no DOM stuff here...

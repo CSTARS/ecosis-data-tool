@@ -88,10 +88,10 @@
                     }
                 }
             
-                this.joinOnMetadata(data);
-console.log(data);
+                var schema = Esis.getJoinedSchema();
+                var joinedData = this.joinOnMetadata(data);
 
-                exporter.run(this.directory, this.fileName, data, function(){
+                exporter.run(this.directory, this.fileName, schema, joinedData, function(){
                     alert('Success');
                     this.fileName = '';
                     this.$.filenameInput.value = '';
@@ -100,17 +100,31 @@ console.log(data);
             },
 
             joinOnMetadata : function(spectra) {
-                for( var i = 0; i < spectra.length; i++ ) {
+                var result = [];
 
-                    var metadata = Esis.getJoinedMetadata(spectra[i]);
+                for( var i = 0; i < spectra.length; i++ ) {
+                    var sp = $.extend(true, {}, spectra[i]);
+
+                    var metadata = Esis.getJoinedMetadata(sp);
                     for( var j = 0; j < metadata.length; j++ ) {
                     
                         for( var key in metadata[j] ) {
-                            if( spectra[i][key] !== undefined ) continue;
-                            spectra[i][key] = metadata[j][key];
-                        }       
+                            if( sp[key] !== undefined || key == 'datapoints') continue;
+                            sp[key] = metadata[j][key];
+                        }
+
+                        if( metadata[j].datapoints ) {
+                            if( !sp.datapoints ) sp.datapoints = [];
+                            for( var z = 0; z < metadata[j].datapoints.length; z++ ) {
+                                sp.datapoints.push(metadata[j].datapoints[z]);
+                            }
+                        }
                     }
+
+                    result.push(sp);
                 }
+
+                return result;
             }
 
 

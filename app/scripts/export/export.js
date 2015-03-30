@@ -5,7 +5,7 @@ var csv = require('fast-csv');
 var dataToArray = require('./dataToArrays');
 
 
-exports.run = function(dir, name, spectra, callback) {
+exports.run = function(dir, name, schema, spectra, callback) {
     if( !fs.existsSync(dir) ) return callback({error: true, message: 'invalid directory'});
 
     name = name.replace(/ /g, '_').replace(/\W/g, '');
@@ -14,17 +14,17 @@ exports.run = function(dir, name, spectra, callback) {
 
     if( fs.existsSync(dir+'/'+name) ) {
         rimraf(dir+'/'+name, function(){
-            create(dir, name, spectra, callback);
+            create(dir, name, schema, spectra, callback);
         });
     } else {
-        create(dir, name, spectra, callback);
+        create(dir, name, schema, spectra, callback);
     }
 }
 
-function create(dir, name, spectra, callback) {
+function create(dir, name, schema, spectra, callback) {
     fs.mkdirSync(dir+'/'+name);
 
-    var arrays = dataToArray.run(spectra);
+    var arrays = dataToArray.run(schema, spectra);
 
     // write dot file for importer
 
