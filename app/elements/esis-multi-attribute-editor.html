@@ -1,17 +1,30 @@
 <dom-module id="esis-multi-attribute-editor" >
     <template>
         <h4 id="title"></h4>
-        <div class="help-text" style="padding-bottom: 10px; color: #888; font-size: 12px">Edit multiple spectra at once. You can quickly navigate througth the Attribute List by using the <i class="fa fa-arrow-left"></i> left and <i class="fa fa-arrow-right"></i> right arrow keys.</div>
+        <div class="help-text" style="padding: 15px 15px 30px 15px; font-size: 12px">Edit multiple spectra at once. You can quickly navigate througth the Attribute List by using the <i class="fa fa-arrow-left"></i> left and <i class="fa fa-arrow-right"></i> right arrow keys.</div>
 
         <div style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">
-            Attribute: <select id="selector" on-change="onAttrChange" class="form-control"></select>
+            Attribute: <select id="selector" on-change="onAttrChange" class="form-control" style="display: inline-block; max-width: 300px"></select>
         </div>
 
         <div style="background-color: #485563; padding: 5px">
+            
+            Set value for all selected '<span class="selectedLabel"></span>':
             <esis-metadata-attribute 
                 id="attrInput"
                 on-value-change="onValueChange">
             </esis-metadata-attribute>
+
+            <div id="customMap" style="display:none">
+                <div style="border-top: 1px solid #ccc;text-align: center">
+                    or
+                </div>
+
+                <div style="padding:10px">
+                    Map '<span class="selectedLabel"></span>' to:<br />
+                    <select id="mapSelector" class="form-control" style="display: inline-block; max-width: 300px" on-change="onMapChange"></select>
+                </div>
+            </div>
 
             <div class="label label-success" id="updateLabel" style="display:none">Updated!</div>
         </div>
@@ -83,12 +96,15 @@
 
             html += '<optgroup label="Custom">';
 
+            var mapSelector = '<option></option>';
             for( var key in t ) {
                 if( Esis.schemaAll[key] ) continue;
                 html += '<option value="'+key+'">'+key+'</option>';
+                mapSelector += '<option value="'+key+'">'+key+'</option>';
             }
 
             this.$.selector.innerHTML = html+'</optgroup>';
+            this.$.mapSelector.innerHTML = mapSelector;
 
             this.setSelected(Object.keys(Esis.schemaAll)[0]);
             this.editing = true;
@@ -115,6 +131,44 @@
         setSelected : function(attr) {
             this.selected = attr;
             this.$.attrInput.update(attr, '');
+
+            $(this).find('.selectedLabel').text(attr);
+
+            if( Esis.schemaAll[attr] ) this.$.customMap.style.display = 'block';
+            else this.$.customMap.style.display = 'none';
+
+            var map = Esis.files.getMap();
+            if( map[attr] !== undefined ) this.$.mapSelector.value = map[attr];
+            else this.$.mapSelector.value = '';
+        },
+
+        onMapChange : function() {
+            var files, i, j, z, items, score, className;
+            var value = this.$.mapSelector.value;
+
+
+            if( value == '' ) {
+                Esis.files.removeMapAttribute(this.selected);
+                return;
+            }
+            
+            Esis.files.setMapAttribute(this.selected, value);
+            
+            var files = Esis.files.get();
+            for( i = 0; i < files.length; i++ ) {
+                for( j = 0; j < files[i].sheets.length; j++ ) {
+                    if( !files[i].sheets[j].spectra ) continue;
+                    items = files[i].sheets[j].spectra;
+
+                    for( z = 0; z < items.length; z++ ) {
+                        score = Esis.getSpectraScore(items[z]);
+                        className = 'label '+Esis.getScoreClass(score);
+
+                        $('#sp-list-'+i+'-'+j+'-'+z+' .score')
+                            .html('<label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label>');
+                    }
+                }
+            }            
         },
 
         onValueChange : function(e) {

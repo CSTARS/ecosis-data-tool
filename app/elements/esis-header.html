@@ -12,6 +12,7 @@
         </div>
 
         <a class="btn btn-link pull-right" style="display:none" id="exportBtn" on-click="showExportPopup"><i class="fa fa-download"></i> Export</a>
+        <a class="btn btn-link pull-right" on-click="goToBugReport"><i class="fa fa-bug"></i> Report Bug</a>
 
         <esis-popup id="exportPopup" header="Save Package">
             <div class="popup-body">
@@ -34,6 +35,7 @@
     (function(){
 
         var exporter = require('./scripts/export/export.js');
+        var shell = require('nw.gui').Shell;
 
         Polymer({
             is : 'esis-header',
@@ -125,6 +127,10 @@
                 }
 
                 return result;
+            },
+
+            goToBugReport : function() {
+                shell.openExternal('https://github.com/CSTARS/ecosis-data-tool/issues');
             }
 
 

@@ -12,6 +12,7 @@ Esis.schema = require('./schema.json');
 Esis.level1 = {};
 Esis.level2 = {};
 Esis.schemaAll = {};
+Esis.schemaFlat = {};
 Esis.schemaTotal = 0;
 
 for( var key in Esis.schema ) {
@@ -26,6 +27,9 @@ for( var key in Esis.schema ) {
         }
 
         Esis.schemaAll[Esis.schema[key][i].name] = Esis.schema[key][i];
+
+        var flat = Esis.schema[key][i].name.replace(/ /g,'').toLowerCase();
+        Esis.schemaFlat[flat] = Esis.schema[key][i].name;
     }
 }
 

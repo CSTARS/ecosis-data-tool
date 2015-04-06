@@ -104,6 +104,7 @@
             this.currentIndex = [0, 0, 0];
 
             this.spectra = {};
+            this.metadata = {};
         },
 
         attached : function() {
@@ -244,7 +245,8 @@
             var count = 0;
 
             for( var i = 0; i < items.length; i++ ) {
-                if( this.spectra[items[i].getAttribute('value')] ) {
+                var val = items[i].getAttribute('value');
+                if( this.spectra[val] !== undefined || this.metadata[val] !== undefined ) {
                     count++;
                     $(items[i]).find('.has-value').show();
                 } else {
@@ -258,7 +260,7 @@
             this.$.attrCounts.className = className;
         },
 
-        updateSelector : function() {            
+        updateSelector : function() {         
             var html = '';
             for( var key in Esis.schema ) {
                 html += '<h4>'+key+'</h4><div class="list-group">';

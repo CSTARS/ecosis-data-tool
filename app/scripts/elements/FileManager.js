@@ -60,7 +60,7 @@ var FileManager = (function(){
                 }
 
                 var sheetIndex = Esis.files.addSheet(this.currentFileIndex, type, orientation, resp[i]);
-                var parsedTable = tableParser.run(resp[i], orientation);
+                var parsedTable = tableParser.run(resp[i], orientation, Esis);
 
                 if( type == 'data' ) {
                     Esis.files.setSheetSpectra(this.currentFileIndex, sheetIndex, parsedTable.spectra);
@@ -94,7 +94,7 @@ var FileManager = (function(){
 
             var orientation = ele.val();
 
-            var resp = tableParser.run(Esis.files.getSheet(fileIndex, sheetIndex).table, orientation);
+            var resp = tableParser.run(Esis.files.getSheet(fileIndex, sheetIndex).table, orientation, Esis);
             var sheet = Esis.files.updateSheetOrientation(fileIndex, sheetIndex, orientation, resp.spectra, resp.attributes);
 
             // TODO: no DOM stuff here...

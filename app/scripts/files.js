@@ -1,6 +1,7 @@
 Esis.files = (function(){
 
     var files = [];
+    var map = {};
 
     function add(name, parser) {
         files.push({
@@ -155,6 +156,46 @@ Esis.files = (function(){
         return files[fileIndex].sheets[sheetIndex];
     }
 
+    function setMapAttribute(ecosis, custom) {
+        map[ecosis] = custom;
+
+        for( var i = 0; i < files.length; i++ ) {
+            for( var j = 0; j < files[i].sheets.length; j++ ) {
+                var items = files[i].sheets[j].spectra ? files[i].sheets[j].spectra : files[i].sheets[j].metadata;
+                
+                for( var z = 0; z < items.length; z++ ) {
+                    if( items[z][custom] !== undefined ) {
+                        items[z][ecosis] = items[z][custom];
+                        delete items[z][custom];
+                    }
+                }
+            }
+        }
+    }
+
+    function removeMapAttribute(ecosis) {
+        if( map[ecosis] === undefined ) return;
+        var custom = map[ecosis];
+        delete map[ecosis];
+
+        for( var i = 0; i < files.length; i++ ) {
+            for( var j = 0; j < files[i].sheets.length; j++ ) {
+                var items = files[i].sheets[j].spectra ? files[i].sheets[j].spectra : files[i].sheets[j].metadata;
+                
+                for( var z = 0; z < items.length; z++ ) {
+                    if( items[z][ecosis] !== undefined ) {
+                        items[z][custom] = items[z][ecosis];
+                        delete items[z][ecosis];
+                    }
+                }
+            }
+        }
+    }
+
+    function getMap() {
+        return map;
+    }
+
     return {
         add : add,
         get : get,
@@ -165,7 +206,10 @@ Esis.files = (function(){
         setSheetMetadata : setSheetMetadata,
         updateSheetJoin : updateSheetJoin,
         addSheet : addSheet,
-        getSheet : getSheet
+        getSheet : getSheet,
+        setMapAttribute : setMapAttribute,
+        removeMapAttribute : removeMapAttribute,
+        getMap : getMap
     }
 
 })();

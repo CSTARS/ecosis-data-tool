@@ -1,5 +1,5 @@
 
-exports.run = function(table, orientation) {
+exports.run = function(table, orientation, Esis) {
     if( table.length == 0 ) return [];
 
     var headerRange = getHeader(table);
@@ -29,6 +29,21 @@ exports.run = function(table, orientation) {
     } else {
         for( var i = start; i < table.length; i++ ) {
             attributes.push(table[i][0]);
+        }
+    }
+
+    // clean up any ecosis attribute names
+    if( Esis ) {
+        for( var i = 0; i < spectra.length; i++ ) {
+            for( var key in spectra[i] ) {
+                if( Esis.schemaAll[key] ) continue;
+
+                var flat = key.replace(/\s/g, '').toLowerCase();
+                if( Esis.schemaFlat[flat] !== undefined ) {
+                    spectra[i][Esis.schemaFlat[flat]] = spectra[i][key];
+                    delete spectra[key];
+                }
+            }
         }
     }
 
