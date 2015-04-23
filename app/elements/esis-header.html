@@ -6,13 +6,15 @@
         }
     </style>
     <template>
-        <div class="navbar-header" style="padding-left: 15px">
-            <span style="font-size: 20px; margin-top: 5px; display: inline-block"><i class="fa fa-leaf"></i> EcoSIS Data Tool
-            <span style="font-size: 10px">v0.0.4</span></span>           
+        <div class="navbar-header" style="padding-left: 15px; padding-top: 15px; ">
+            <span style="font-size: 20px; display: inline-block"><i class="fa fa-leaf"></i> EcoSIS Data Tool
+            <span style="font-size: 10px">v0.0.4</span></span>
         </div>
 
-        <a class="btn btn-link pull-right" style="display:none" id="exportBtn" on-click="showExportPopup"><i class="fa fa-download"></i> Export</a>
-        <a class="btn btn-link pull-right" on-click="goToBugReport"><i class="fa fa-bug"></i> Report Bug</a>
+        <div class="pull-right" style="margin-top: 15px">
+          <a class="btn btn-link" style="display:none" id="exportBtn" on-click="showExportPopup"><i class="fa fa-download"></i> Export</a>
+          <a class="btn btn-link" on-click="goToBugReport"><i class="fa fa-bug"></i> Report Bug</a>
+        </div>
 
         <esis-popup id="exportPopup" header="Save Package">
             <div class="popup-body">
@@ -49,7 +51,7 @@
             },
 
             showExport : function() {
-                this.$.exportBtn.style.display = 'block';
+                this.$.exportBtn.style.display = 'inline-block';
             },
 
             showExportPopup : function() {
@@ -63,7 +65,7 @@
             onSelect : function(e) {
                 this.directory = this.$.fileDialog.value;
                 this.$.selectedDir.innerText = this.directory;
-                
+
                 if( this.fileName ) this.$.save.style.display = 'block';
             },
 
@@ -81,7 +83,7 @@
                 for( i = 0; i < files.length; i++ ) {
 
                     for( j = 0; j < files[i].sheets.length; j++ ) {
-                        
+
                         if( files[i].sheets[j].type != 'data' || !files[i].sheets[j].spectra ) continue;
                         sheet = files[i].sheets[j];
 
@@ -89,7 +91,7 @@
 
                     }
                 }
-            
+
                 var schema = Esis.getJoinedSchema();
                 var joinedData = this.joinOnMetadata(data);
 
@@ -109,7 +111,7 @@
 
                     var metadata = Esis.getJoinedMetadata(sp);
                     for( var j = 0; j < metadata.length; j++ ) {
-                    
+
                         for( var key in metadata[j] ) {
                             if( sp[key] !== undefined || key == 'datapoints') continue;
                             sp[key] = metadata[j][key];

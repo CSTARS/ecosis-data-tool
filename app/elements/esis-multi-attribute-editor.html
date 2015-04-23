@@ -1,16 +1,26 @@
 <dom-module id="esis-multi-attribute-editor" >
     <template>
         <h4 id="title"></h4>
-        <div class="help-text" style="padding: 15px 15px 30px 15px; font-size: 12px">Edit multiple spectra at once. You can quickly navigate througth the Attribute List by using the <i class="fa fa-arrow-left"></i> left and <i class="fa fa-arrow-right"></i> right arrow keys.</div>
-
-        <div style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">
-            Attribute: <select id="selector" on-change="onAttrChange" class="form-control" style="display: inline-block; max-width: 300px"></select>
+        <div class="well">
+          Edit multiple spectra at once. You can quickly navigate througth the
+          Attribute List by using the <i class="fa fa-arrow-left"></i> left and
+          <i class="fa fa-arrow-right"></i> right arrow keys.
         </div>
 
-        <div style="background-color: #485563; padding: 5px">
-            
+        <div class="form-horizontal">
+          <div class="form-group">
+            <label for="attributeSelect" class="col-md-2 control-label">Attribute</label>
+            <div class="col-md-10">
+              <select id="selector" on-change="onAttrChange" class="form-control" style="display: inline-block; max-width: 300px"></select>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="well">
+
             Set value for all selected '<span class="selectedLabel"></span>':
-            <esis-metadata-attribute 
+            <esis-metadata-attribute
                 id="attrInput"
                 on-value-change="onValueChange">
             </esis-metadata-attribute>
@@ -42,7 +52,7 @@
                 if( !this.editing ) return;
 
                 if( e.which == 37 ) this.prev();
-                else if ( e.which == 39 ) this.next();                
+                else if ( e.which == 39 ) this.next();
             }.bind(this));
         },
 
@@ -151,9 +161,9 @@
                 Esis.files.removeMapAttribute(this.selected);
                 return;
             }
-            
+
             Esis.files.setMapAttribute(this.selected, value);
-            
+
             var files = Esis.files.get();
             for( i = 0; i < files.length; i++ ) {
                 for( j = 0; j < files[i].sheets.length; j++ ) {
@@ -168,7 +178,7 @@
                             .html('<label class="label '+className+'">'+score+'/'+Esis.schemaTotal+'</label>');
                     }
                 }
-            }            
+            }
         },
 
         onValueChange : function(e) {
