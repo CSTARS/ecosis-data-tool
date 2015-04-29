@@ -3,9 +3,6 @@
         esis-metadata-attribute {
             display: block;
         }
-        #inputRoot {
-            padding: 30px 20px;
-        }
     </style>
     <template>
 
@@ -18,8 +15,8 @@
         <div id="inputRoot"></div>
 
         <template id="controlledVocab" is="x-template">
-            <esis-controlled-input 
-                value="{{value}}" 
+            <esis-controlled-input
+                value="{{value}}"
                 attribute="{{attribute}}">
             </esis-controlled-input>
         </template>
@@ -34,7 +31,7 @@
         </template>
 
         <template id="usda" is="x-template">
-            <esis-usda-input 
+            <esis-usda-input
                 value="{{value}}">
             </esis-usda-input>
         </template>
@@ -60,8 +57,8 @@
 
             if( Esis.schemaAll[this.attribute] ) {
                 var item = Esis.schemaAll[this.attribute];
-                
-                if( item.level == 1) this.$.attrTitle.innerHTML = '<i class="fa fa-star" style="color:yellow"></i> '+attribute;
+
+                if( item.level == 1) this.$.attrTitle.innerHTML = '<span class="text-primary"><i class="fa fa-star"></i></span> '+attribute;
                 else this.$.attrTitle.innerText = attribute;
 
                 this.$.attrDescription.innerText = item.description || '';
@@ -77,6 +74,7 @@
                 this.$.attrDescription.innerText = 'Custom attribute for this dataset';
                 this.values = null;
                 this.type = 'custom';
+                this.input = '';
 
                 this.createInput();
             }
@@ -99,7 +97,7 @@
 
                 this.$.inputRoot.querySelector('select').focus();
 
-            } else if ( this.attribute == 'USDA Code' ) {
+            } else if ( this.attribute == 'USDA Symbol' ) {
                 var t = this.$.usda.stamp({
                     value : this.value,
                     attribute : this.attribute

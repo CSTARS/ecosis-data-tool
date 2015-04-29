@@ -7,33 +7,36 @@
           <i class="fa fa-arrow-right"></i> right arrow keys.
         </div>
 
-        <div class="form-horizontal">
+        <!--<div class="form-horizontal">
           <div class="form-group">
-            <label for="attributeSelect" class="col-md-2 control-label">Attribute</label>
+            <label for="attributeSelect" class="col-md-2 control-label"></label>
             <div class="col-md-10">
               <select id="selector" on-change="onAttrChange" class="form-control" style="display: inline-block; max-width: 300px"></select>
             </div>
           </div>
-        </div>
+        </div>-->
+        <select id="selector" on-change="onAttrChange" class="form-control"></select>
 
 
         <div class="well">
 
-            Set value for all selected '<span class="selectedLabel"></span>':
             <esis-metadata-attribute
                 id="attrInput"
                 on-value-change="onValueChange">
             </esis-metadata-attribute>
 
             <div id="customMap" style="display:none">
-                <div style="border-top: 1px solid #ccc;text-align: center">
-                    or
+                <h4 style="text-align: center">or</h4>
+
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label for="mapSelector" class="col-md-2 control-label">Map to: </label>
+                    <div class="col-md-10">
+                      <select id="mapSelector" class="form-control" on-change="onMapChange"></select>
+                    </div>
+                  </div>
                 </div>
 
-                <div style="padding:10px">
-                    Map '<span class="selectedLabel"></span>' to:<br />
-                    <select id="mapSelector" class="form-control" style="display: inline-block; max-width: 300px" on-change="onMapChange"></select>
-                </div>
             </div>
 
             <div class="label label-success" id="updateLabel" style="display:none">Updated!</div>

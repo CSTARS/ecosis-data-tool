@@ -12,12 +12,11 @@
             cursor: pointer;
         }
         a.list-group-item[active] {
-            background-color: #485563;
             color: #df691a;
         }
         a.list-group-item {
             cursor: pointer;
-        } 
+        }
         .has-value {
             display: none;
             color: #5cb85c;
@@ -43,7 +42,7 @@
             <div class="flex" style="position: relative">
                 <div class="layout horizontal fit">
 
-                    <div style="height: 100%; overflow: auto; width: 250px; border-right: 1px solid #4e5d6c">
+                    <div style="height: 100%; overflow: auto; width: 300px; border-right: 1px solid #4e5d6c">
                         <h4 style="margin-bottom: 20px; text-align: center">Attributes</h4>
 
                         <div class="panel panel-success">
@@ -51,7 +50,7 @@
                             <div class="panel-body" id="ecosisAttrPanel"></div>
                         </div>
 
-                         <div class="panel panel-info">
+                         <div class="panel panel-primary">
                             <div class="panel-heading">Custom</div>
                             <div class="panel-body">
                                 <div class="list-group">
@@ -72,9 +71,9 @@
                                  <a class="btn btn-link" on-click="back"><i class="fa fa-arrow-left"></i> Spectra List</a>
                             </div>
 
-                            <esis-metadata-attribute 
+                            <esis-metadata-attribute
                                 id="attrInput"
-                                hidden$="{{!showAttribute}}" 
+                                hidden$="{{!showAttribute}}"
                                 on-value-change="onValueChange">
                             </esis-metadata-attribute>
 
@@ -175,8 +174,8 @@
             this.customAttributes = [];
             for( var key in this.spectra ) {
                 if( key == 'datapoints' ) continue;
-                if( Esis.schema[key] !== undefined ) continue;
-                
+                if( Esis.schemaAll[key] !== undefined ) continue;
+
                 this.customAttributes.push({name: key});
             }
 
@@ -185,8 +184,8 @@
             for( var i = 0; i < metadata.length; i++ ) {
                 for( var key in metadata[i] ) {
                     if( key == 'datapoints' ) continue;
-                    if( Esis.schema[key] !== undefined ) continue;
-                    
+                    if( Esis.schemaAll[key] !== undefined ) continue;
+
                     if( !this._hasCustomAttr(key) ) {
                         this.customAttributes.push({name: key});
                         this.metadata[key] = metadata[i][key];
@@ -194,7 +193,7 @@
                 }
             }
 
-            this.$.titleLabel.innerHTML = Esis.files.get(this.currentIndex[0]).name.replace(/.*\//,'') + 
+            this.$.titleLabel.innerHTML = Esis.files.get(this.currentIndex[0]).name.replace(/.*\//,'') +
                                             ' - Sheet #'+(this.currentIndex[1]+1) +
                                             ' - Spectra #'+(this.currentIndex[2]+1);
 
@@ -255,21 +254,32 @@
             }
 
             this.$.attrCounts.innerHTML = count + '/' + Esis.schemaTotal;
-            
+
             var className = 'pull-right label '+Esis.getScoreClass(count);
             this.$.attrCounts.className = className;
         },
 
-        updateSelector : function() {         
+        updateSelector : function() {
             var html = '';
-            for( var key in Esis.schema ) {
+
+            var keys = Object.keys(Esis.schema);
+            keys.sort(function(a,b){
+              if( a == 'Species' || b == 'Species' ) return 1;
+              if( a < b ) return 1;
+              if( a > b ) return -1;
+              return 0;
+            });
+
+            for( var j = 0; j < keys.length; j++ ) {
+              var key = keys[j];
+
                 html += '<h4>'+key+'</h4><div class="list-group">';
 
                 for( var i = 0; i < Esis.schema[key].length; i++ ) {
                     var item = Esis.schema[key][i];
 
                     html += '<a class="list-group-item attr-item ecosis-item" style-scope="esis-attribute-panel" value="'+item.name+'" style="cursor:pointer">'+
-                                (item.level == 1 ? '<i style="color:yellow" class="fa fa-star"></i> ' : '')+
+                                (item.level == 1 ? '<span class="text-primary"><i class="fa fa-star"></i></span> ' : '')+
                                 '<span>'+item.name+'</span><span class="has-value" style-scope="esis-attribute-panel"><i class="fa fa-check"></i></span>'+
                             '</a>';
                 }

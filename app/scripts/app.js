@@ -6,6 +6,7 @@ gui.App.setCrashDumpDir('/Users/jrmerz/dev/cstars/EcoSIS/ecosis-data-tool/');
 /* Initialize the EcoSIS NS */
 var Esis = {};
 
+
 Esis.schema = require('./schema.json');
 
 // process schema into easy to use data structures
@@ -15,22 +16,34 @@ Esis.schemaAll = {};
 Esis.schemaFlat = {};
 Esis.schemaTotal = 0;
 
+delete Esis.schema.Location;
 for( var key in Esis.schema ) {
-    for( var i = 0; i < Esis.schema[key].length; i++ ) {
-        Esis.schema[key][i].category = key;
 
-        if( Esis.schema[key][i].level == 1 ) {
-            Esis.schemaTotal++;
-            Esis.level1[Esis.schema[key][i].name] = Esis.schema[key][i];
-        } else {
-            Esis.level2[Esis.schema[key][i].name] = Esis.schema[key][i];
-        }
+  for( var i = Esis.schema[key].length-1; i >= 0; i-- ) {
+    if( !Esis.schema[key][i].spectraLevel ) {
 
-        Esis.schemaAll[Esis.schema[key][i].name] = Esis.schema[key][i];
-
-        var flat = Esis.schema[key][i].name.replace(/ /g,'').toLowerCase();
-        Esis.schemaFlat[flat] = Esis.schema[key][i].name;
+      Esis.schema[key].splice(i, 1);
+      continue;
     }
+
+    Esis.schema[key][i].category = key;
+
+    if( Esis.schema[key][i].level == 1 ) {
+        Esis.schemaTotal++;
+        Esis.level1[Esis.schema[key][i].name] = Esis.schema[key][i];
+    } else {
+        Esis.level2[Esis.schema[key][i].name] = Esis.schema[key][i];
+    }
+
+    Esis.schemaAll[Esis.schema[key][i].name] = Esis.schema[key][i];
+
+    var flat = Esis.schema[key][i].name.replace(/ /g,'').toLowerCase();
+    Esis.schemaFlat[flat] = Esis.schema[key][i].name;
+  }
+
+  if( Esis.schema[key].length == 0 ) {
+    delete Esis.schema[key];
+  }
 }
 
 Esis.showSpectraList = function() {
@@ -95,7 +108,7 @@ Esis.updateJoinCount = function(fileIndex, sheetIndex, joinOnAttr) {
 
     for( var i = 0; i < files.length; i++ ) {
         var file = files[i];
-        
+
         for( var j = 0; j < file.sheets.length; j++ ) {
             var inspectSheet = file.sheets[j];
 
@@ -159,10 +172,10 @@ Esis.getJoinedSchema = function() {
 
     for( var i = 0; i < files.length; i++ ) {
         var file = files[i];
-        
+
         for( var j = 0; j < file.sheets.length; j++ ) {
             var ss = file.sheets[j].schema;
-            
+
             for( var key in ss.metadata ) {
                 Esis.addSchemaKey(schema, 'metadata', key, ss.metadata[key]);
             }
@@ -201,8 +214,8 @@ Esis.app = (function(){
         }
     });
 
-    /* 
-        OSX Copy & Paste Fix: 
+    /*
+        OSX Copy & Paste Fix:
         https://github.com/nwjs/nw.js/issues/1955
         https://github.com/nwjs/nw.js/issues/2039
     */
@@ -237,6 +250,6 @@ Esis.app = (function(){
     function updateSpectraTable(e) {
         document.querySelector('#list').onSpectraUpdated(e.detail);
     }
-    
+
     return {}
 })();

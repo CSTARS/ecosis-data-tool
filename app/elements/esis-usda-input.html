@@ -23,7 +23,7 @@
             <div class="panel panel-info" style="display: inline-block">
                 <div class="panel-heading">
                     <h3 class="panel-title">
-                        <span>{{acceptedsymbol}}</span>: 
+                        <span>{{acceptedsymbol}}</span>:
                         <small>{{commonname}}</small>
 
                         <a style="float: right; cursor:pointer" on-click="openLink" value$="{{acceptedsymbol}}"><i class="fa fa-info-circle"></i></a>
@@ -32,13 +32,10 @@
                 <div class="panel-body">
                     <ul class="list-group">
                         <li class="list-group-item">
-                            <b>Scientific Name: </b><span>{{scientificname}}</span>
+                            <b>Latin Species: </b><span>{{latinspecies}}</span>
                         </li>
                         <li class="list-group-item">
-                            <b>Category: </b><span>{{category}}</span>
-                        </li>
-                        <li class="list-group-item">
-                            <b>Genus: </b><span>{{genus}}</span>
+                            <b>Latin Genus: </b><span>{{latingenus}}</span>
                         </li>
                     </ul>
                 </div>
@@ -47,9 +44,13 @@
 
         <div id="current"></div>
 
-        <div>
-            <h4><i class="fa fa-search"></i> Search</h4>
-            <input id="searchInput" class="form-control" on-change="search" on-keypress="onKeyPress" /> 
+        <div class="form-horizontal">
+          <div class="form-group">
+            <label for="searchInput" class="col-md-2 control-label"><i class="fa fa-search"></i> Search</label>
+            <div class="col-md-10">
+              <input id="searchInput" class="form-control" on-change="search" on-keypress="onKeyPress" placeholder="Search by plant name" />
+            </div>
+          </div>
         </div>
 
         <div hidden$="{{!searching}}">
@@ -61,8 +62,15 @@
                 <div class="panel panel-primary" style="display: inline-block">
                     <div class="panel-heading">
                         <h3 class="panel-title">
-                            <a style="cursor:pointer" on-click="setValue" value$="{{item.acceptedsymbol}}"><i class="fa fa-plus"></i></a>&nbsp;&nbsp;
-                            <span>{{item.acceptedsymbol}}</span>: 
+                            <a style="cursor:pointer"
+                              on-click="setValue"
+                              value$="{{item.acceptedsymbol}}"
+                              genus$="{{item.latingenus}}"
+                              species$="{{item.latinspecies}}"
+                              commonname$="{{item.commonname}}">
+                                <i class="fa fa-plus"></i>
+                            </a>&nbsp;&nbsp;
+                            <span>{{item.acceptedsymbol}}</span>:
                             <small>{{item.commonname}}</small>
 
                             <a style="float: right; cursor:pointer" on-click="openLink" value$="{{item.acceptedsymbol}}"><i class="fa fa-info-circle"></i></a>
@@ -71,13 +79,10 @@
                     <div class="panel-body">
                         <ul class="list-group">
                             <li class="list-group-item">
-                                <b>Scientific Name: </b><span>{{item.scientificname}}</span>
+                                <b>Species: </b><span>{{item.latinspecies}}</span>
                             </li>
                             <li class="list-group-item">
-                                <b>Category: </b><span>{{item.category}}</span>
-                            </li>
-                            <li class="list-group-item">
-                                <b>Genus: </b><span>{{item.genus}}</span>
+                                <b>Latin Genus: </b><span>{{item.latingenus}}</span>
                             </li>
                         </ul>
                     </div>
@@ -93,7 +98,7 @@
 
     Polymer({
         is: 'esis-usda-input',
-        
+
         configure : function() {
             return {
                 rest : 'http://dev-search.ecospectra.org/rest/usda/search?q=',
@@ -122,9 +127,21 @@
                 if( resp.error ) return alert('Error in search :(');
                 if( resp.length == 0 ) return alert('Error: invalid code');
 
-                for( var key in resp[0] ) resp[0][key.toLowerCase().replace(/ /g,'')] = resp[0][key];
+                resp = resp[0];
+                for( var key in resp ) {
+                  resp[key.toLowerCase().replace(/ /g,'')] = resp[key];
+                }
+                resp.latingenus = '';
+                resp.latinspecies = '';
 
-                var t = this.$.currentTemplate.stamp(resp[0]);
+                if( resp.scientificname ) {
+                  var parts = resp.scientificname.split(' ');
+                  resp.latingenus = parts.splice(0, 1)[0];
+                  resp.latinspecies = parts.join(' ');
+                }
+
+
+                var t = this.$.currentTemplate.stamp(resp);
                 this.$.current.appendChild(t.root);
             }.bind(this));
         },
@@ -148,16 +165,38 @@
         setResults : function(results) {
             for( var i = 0; i < results.length; i++ ) {
                 for( var key in results[i] ) results[i][key.toLowerCase().replace(/ /g,'')] = results[i][key];
+
+                if( results[i].scientificname ) {
+                  var parts = results[i].scientificname.split(' ');
+                  results[i].latingenus = parts.splice(0, 1)[0];
+                  results[i].latinspecies = parts.join(' ');
+                }
             }
             this.results = results;
         },
 
         setValue : function(e) {
             this.value = e.currentTarget.getAttribute('value');
+
             this.fire('usda-value-change',{
-                attribute : 'USDA Code',
+                attribute : 'USDA Symbol',
                 value : this.value
             });
+            this.fire('usda-value-change',{
+                attribute : 'Latin Genus',
+                value : e.currentTarget.getAttribute('genus')
+            });
+            this.fire('usda-value-change',{
+                attribute : 'Latin Species',
+                value : e.currentTarget.getAttribute('species')
+            });
+            this.fire('usda-value-change',{
+                attribute : 'Common Name',
+                value : e.currentTarget.getAttribute('commonname')
+            });
+
+            this.results = [];
+            this.$.searchInput.value = '';
         },
 
         openLink : function(e) {

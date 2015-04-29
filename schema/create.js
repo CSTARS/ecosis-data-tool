@@ -7,7 +7,7 @@ var column = {
   l2 : 2,
   inputType : 3,
   allowOther : 4,
-  datasetLevel : 5,
+  spectraLevel : 5,
   units : 6,
   comment : 7,
   controlledVocab : 8,
@@ -57,7 +57,7 @@ function readCategories(row, data, schema, callback) {
 
         var input = data[row][column.inputType];
         var units = data[row][column.units];
-        var datasetLevel = data[row][column.datasetLevel] == 'TRUE' ? true : false;
+        var spectraLevel = data[row][column.spectraLevel] == 'TRUE' ? true : false;
 
         var vocabulary = null;
         if( data[row][column.controlledVocab].indexOf(',') > -1 ) {
@@ -74,7 +74,7 @@ function readCategories(row, data, schema, callback) {
                 level : level,
                 input : input,
                 units : units,
-                datasetLevel: datasetLevel,
+                spectraLevel: spectraLevel,
                 vocabulary : vocabulary,
                 description : data[row][column.description] || '',
                 allowOther : data[row][column.allowOther] == 'TRUE' ? true : false

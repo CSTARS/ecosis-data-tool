@@ -10,6 +10,9 @@
         .fa-edit:hover {
             color: #df691a;
         }
+        .table-striped > tr:nth-of-type(odd) {
+          background-color: #eee;
+        }
     </style>
     <template>
 
@@ -58,7 +61,7 @@
         redrawTable : function() {
             var files = Esis.files.get();
 
-            var table = '<table class="table table-striped">'+
+            var table = '<table class="table table-striped" style-scope="esis-spectra-list">'+
                 '<tr><th></th><th>File</th><th>Spectra</th><th>Attribute Count</th><th>Score</th><th>Data Points</th><th></th></tr>';
 
             var name, score, i, j, className, attrCount;
@@ -76,7 +79,7 @@
                         className = 'label '+Esis.getScoreClass(score);
                         attrCount = Esis.getAttributeCount(sheet.spectra[j]);
 
-                        table += '<tr id="sp-list-'+i+'-'+j+'-'+z+'"><td>'+
+                        table += '<tr id="sp-list-'+i+'-'+j+'-'+z+'" style-scope="esis-spectra-list"><td>'+
                                  '<input type="checkbox" class="spectra-selector" spectra="'+i+'-'+j+'-'+z+'" /></td>'+
                                  '<td>'+name+'</td>'+
                                  '<td>#'+z+'</td>'+
