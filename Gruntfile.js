@@ -229,29 +229,36 @@ module.exports = function (grunt) {
                          'rm -rf <%= yeoman.dist %>/elements'
 
             },
+            zipClean : {
+              options: {
+                  stdout: true,
+                  stderr: true
+              },
+              command: 'cd webkitbuilds/EcoSISDataTool && rm -rf *.zip'
+            },
             zipWin : {
                 options: {
                     stdout: true,
                     stderr: true
                 },
-                command: 'cd webkitbuilds/EcoSISDataTool/win64 && zip -q -r ../win64.zip ./* && '+
-                         'cd ../win32 && zip -q -r ../win32.zip ./*'
+                command: 'cd webkitbuilds/EcoSISDataTool && zip -q -r win64{.zip,} && '+
+                         'zip -q -r win32{.zip,}'
             },
             zipOSX : {
                 options: {
                     stdout: true,
                     stderr: true
                 },
-                command: 'cd webkitbuilds/EcoSISDataTool/osx64 && zip -q -r ../osx64.zip ./* && '+
-                         'cd ../osx32 && zip -q -r ../osx32.zip ./*'
+                command: 'cd webkitbuilds/EcoSISDataTool && zip -q -r osx64{.zip,} && '+
+                         'zip -q -r osx32{.zip,}'
             },
             zipLinux : {
                 options: {
                     stdout: true,
                     stderr: true
                 },
-                command: 'cd webkitbuilds/EcoSISDataTool/linux64 && zip -q -r ../linux64.zip ./* && '+
-                         'cd ../linux32 && zip -q -r ../linux32.zip ./*'
+                command: 'cd webkitbuilds/EcoSISDataTool && zip -q -r linux64{.zip,} && '+
+                         'zip -q -r linux32{.zip,}'
             },
 
             run : {
@@ -277,7 +284,7 @@ module.exports = function (grunt) {
             },
             expand : {
                 dir : '',
-                prmname : '', 
+                prmname : '',
                 options: {
                     stdout: true,
                     stderr: true
@@ -321,10 +328,11 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('zip',[
+    'shell:zipClean',
     'shell:zipWin',
     'shell:zipOSX',
     'shell:zipLinux'
   ]);
- 
+
 
 };
