@@ -23,7 +23,7 @@ load(function(data){
 function load(callback) {
     var data = [];
     csv
-        .fromPath(__dirname+'/data/schema_v1.csv')
+        .fromPath(__dirname+'/data/schema_v2.csv')
         .on('data', function(row){
             data.push(row);
         })
@@ -97,9 +97,10 @@ function write(schema) {
 }
 
 function prepVocab(txt) {
-    var parts = txt.trim().split(' ');
-    for( var i = 0; i < parts.length; i++ ) {
-        if( parts[i].length > 0 ) parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1);
-    }
-    return parts.join(' ');
+    return txt.trim();
+    //var parts = txt.trim().split(' ');
+    //for( var i = 0; i < parts.length; i++ ) {
+    //    if( parts[i].length > 0 ) parts[i] = parts[i].charAt(0).toUpperCase() + parts[i].slice(1);
+    //}
+    //return parts.join(' ');
 }

@@ -1,7 +1,7 @@
 {
   "name": "EcoSISDataTool",
   "description": "EcoSIS Data Tool",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "index.html",
   "window": {
     "icon": "icon.png",
