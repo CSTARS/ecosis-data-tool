@@ -23,7 +23,7 @@ load(function(data){
 function load(callback) {
     var data = [];
     csv
-        .fromPath(__dirname+'/data/schema_v2.csv')
+        .fromPath(__dirname+'/data/schema_v1.csv')
         .on('data', function(row){
             data.push(row);
         })
